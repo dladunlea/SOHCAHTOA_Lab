@@ -1,0 +1,1126 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>SOH CAH TOA Lab</title>
+<style>
+[hidden]{display:none!important}
+html,body{margin:0}
+img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&family=VT323&display=swap">
+<style>
+/* Layout: one guided lesson card at a time with a part-by-part progress strip on top; the printed trig table sits beside the card in parts 3 and 4 and stacks under it on phones. */
+:root{
+  --bg:#e8eeec; --paper:#f8fbfa; --ink:#1b2b2a; --muted:#566a68; --rule:#cbd8d5;
+  --accent:#1f6b66; --accent-soft:#d6e9e6; --brass:#a87a1f; --brass-soft:#f4e7c6;
+  --good:#2e7d4f; --good-soft:#dcefe3; --bad:#b33a3a; --bad-soft:#f6dede;
+  --lcd:#b9c8a5; --lcd-ink:#1f2a17; --case:#2a3131; --case-2:#3a4343; --key:#e0e6e4; --key-ink:#1b2b2a; --case-ink:#c8d0d8;
+  --f-lcd:"VT323", "JetBrains Mono", monospace;
+  --f-display:"Young Serif", Georgia, serif;
+  --f-body:"Atkinson Hyperlegible", system-ui, sans-serif;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121a19; --paper:#1a2524; --ink:#e2ecea; --muted:#97aba8; --rule:#2c3b39;
+  --accent:#6cc4bb; --accent-soft:#1f3a37; --brass:#e0b45a; --brass-soft:#3a2f17;
+  --good:#6fcf97; --good-soft:#18352a; --bad:#ef7b7b; --bad-soft:#3d1f1f;
+  --lcd:#9fb38a; --lcd-ink:#141c0e; --case:#0b0f0f; --case-2:#212b2a; --key:#2f3d3b; --key-ink:#e2ecea; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121a19; --paper:#1a2524; --ink:#e2ecea; --muted:#97aba8; --rule:#2c3b39;
+  --accent:#6cc4bb; --accent-soft:#1f3a37; --brass:#e0b45a; --brass-soft:#3a2f17;
+  --good:#6fcf97; --good-soft:#18352a; --bad:#ef7b7b; --bad-soft:#3d1f1f;
+  --lcd:#9fb38a; --lcd-ink:#141c0e; --case:#0b0f0f; --case-2:#212b2a; --key:#2f3d3b; --key-ink:#e2ecea; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.55;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+.top{display:flex;flex-wrap:wrap;gap:14px 28px;align-items:flex-end;justify-content:space-between}
+.top h1{font-family:var(--f-display);font-weight:400;font-size:clamp(1.6rem,4vw,2.2rem);margin:0;line-height:1.1}
+.top .sub{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+.progress{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;flex:1 1 460px;max-width:700px}
+.progress button{width:100%;text-align:left;background:none;border:0;padding:4px 0;font:inherit;color:var(--muted);cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.progress button:disabled{cursor:default;opacity:.55}
+.progress button:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.progress .bar{display:block;height:6px;border-radius:3px;background:var(--rule);overflow:hidden}
+.progress .bar i{display:block;height:100%;background:var(--accent);transition:width .3s}
+.progress .lab{font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.progress .cur .lab{color:var(--ink)}
+.progress .cur .bar{outline:2px solid var(--brass);outline-offset:1px}
+
+.stage{display:grid;grid-template-columns:minmax(0,1fr);gap:20px;align-items:start}
+.stage.with-book{grid-template-columns:minmax(0,1fr) minmax(0,340px)}
+@media (max-width:900px){.stage.with-book{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--paper);border:1px solid var(--rule);border-radius:10px}
+
+.card{padding:clamp(18px,3.4vw,34px);display:flex;flex-direction:column;gap:18px;min-width:0}
+.eyebrow{margin:0;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.card h2{font-family:var(--f-display);font-weight:400;font-size:clamp(1.3rem,3vw,1.75rem);line-height:1.3;margin:0;text-wrap:balance;max-width:40ch}
+.card h2 b{color:var(--accent);font-weight:400}
+.card p{margin:0;max-width:65ch}
+.card .lead{color:var(--muted)}
+.muted{color:var(--muted)}
+code,.mono{font-family:var(--f-mono);font-size:.92em}
+
+.defs{display:grid;gap:10px;margin:0}
+.defs div{display:grid;grid-template-columns:7.5rem minmax(0,1fr);gap:12px;align-items:baseline}
+@media (max-width:480px){.defs div{grid-template-columns:minmax(0,1fr);gap:0}}
+.defs dt{font-weight:700;color:var(--accent)}
+.defs dd{margin:0}
+
+.pair{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+@media (max-width:620px){.pair{grid-template-columns:minmax(0,1fr)}}
+figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0}
+figcaption{font-size:.85rem;color:var(--muted);text-align:center}
+
+.tri{width:100%;max-width:380px;height:auto;display:block}
+.tri .edge{stroke:var(--ink);stroke-width:3;stroke-linecap:round}
+.tri .edge.good{stroke:var(--good);stroke-width:5}
+.tri .edge.bad{stroke:var(--bad);stroke-dasharray:7 6}
+.tri .edge.focus{stroke:var(--accent);stroke-width:5}
+.tri .hit{stroke:transparent;stroke-width:28;stroke-linecap:round}
+.tri .side{cursor:pointer;outline:none}
+.tri .side:hover .edge{stroke:var(--accent);stroke-width:5}
+.tri .side:focus-visible .edge{stroke:var(--brass);stroke-width:6}
+.tri .sq,.tri .arc{fill:none;stroke:var(--muted);stroke-width:1.5}
+.tri .shade{fill:var(--accent-soft)}
+.tri text{fill:var(--ink);font-family:var(--f-mono);font-size:15px;font-weight:600}
+.tri text.x{fill:var(--brass)}
+.tri text.role{fill:var(--accent);font-family:var(--f-body);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+
+.soh{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:620px){.soh{grid-template-columns:minmax(0,1fr)}}
+.soh div{border:1px solid var(--rule);border-radius:8px;padding:12px 14px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.soh b{font-family:var(--f-display);font-weight:400;font-size:1.6rem;color:var(--accent);letter-spacing:.04em}
+.soh span{font-family:var(--f-mono);font-size:.88rem}
+
+.worked{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:18px;align-items:center}
+@media (max-width:700px){.worked{grid-template-columns:minmax(0,1fr)}}
+.worked ol{margin:0;padding-left:1.3rem;display:grid;gap:8px}
+.worked li::marker{color:var(--accent);font-weight:700}
+.worked li b{font-weight:700}
+.tip{background:var(--brass-soft);border-radius:8px;padding:10px 14px;font-size:.95rem;max-width:65ch}
+
+/* Questions */
+.figure{display:flex;justify-content:center}
+.steps{display:grid;gap:12px}
+.step{display:grid;grid-template-columns:2rem minmax(0,1fr);gap:4px 12px;align-items:start;padding:12px;border-radius:10px;border:1px solid var(--rule)}
+.step.active{border-color:var(--accent);background:var(--bg)}
+.step.done{opacity:.85}
+.step .n{width:2rem;height:2rem;border-radius:50%;display:grid;place-items:center;font:700 .9rem var(--f-mono);background:var(--rule);color:var(--ink)}
+.step.active .n{background:var(--accent);color:var(--paper)}
+.step.done .n{background:var(--good);color:var(--paper)}
+.step-body{display:flex;flex-direction:column;gap:10px;min-width:0}
+.step-text small{display:block;color:var(--muted);font-size:.85rem}
+.row-in{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.in{font-family:var(--f-mono);font-size:1.1rem;height:46px;width:9rem;max-width:100%;padding:0 10px;border:2px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);text-align:center}
+.in:focus{outline:none;border-color:var(--accent);background:var(--accent-soft)}
+.in:disabled{border-style:solid;border-color:var(--good);opacity:1;color:var(--ink)}
+.in.flash{border-color:var(--brass);background:var(--brass-soft)}
+.pre{font-family:var(--f-mono);font-weight:600}
+.frac{display:inline-flex;flex-direction:column;align-items:center;gap:4px}
+.frac .in{width:5.5rem}
+.frac hr{width:100%;border:0;border-top:2px solid var(--ink);margin:0}
+.fns{display:flex;gap:8px;max-width:320px}
+.fn{flex:1;font:700 1rem var(--f-mono);padding:10px 6px;border-radius:8px;border:2px solid var(--rule);background:var(--paper);color:var(--ink);cursor:pointer}
+.fn:hover:not(:disabled){border-color:var(--accent)}
+.fn.on{background:var(--accent);border-color:var(--accent);color:var(--paper)}
+.fn:disabled{cursor:default}
+.fn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+
+.btn{font:700 .95rem var(--f-body);padding:11px 18px;border-radius:8px;border:2px solid var(--accent);background:var(--accent);color:var(--paper);cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;line-height:1.2}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost{background:none;color:var(--accent)}
+.btn.ghost:hover{background:var(--accent-soft);filter:none}
+.btn.small{padding:7px 12px;font-size:.85rem}
+.btn:disabled{opacity:.45;cursor:not-allowed;filter:none}
+.btn:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.linkbtn{background:none;border:0;padding:0;font:inherit;color:var(--accent);text-decoration:underline;cursor:pointer}
+
+.fb{margin:0;padding:10px 14px;border-radius:8px;font-size:.98rem;max-width:65ch}
+.fb:empty{display:none}
+.fb.good{background:var(--good-soft);color:var(--ink);border-left:4px solid var(--good)}
+.fb.bad{background:var(--bad-soft);color:var(--ink);border-left:4px solid var(--bad)}
+.fb.show{background:var(--brass-soft);color:var(--ink);border-left:4px solid var(--brass)}
+
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;border-top:1px solid var(--rule);padding-top:16px}
+
+/* Intro */
+.plan{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+@media (max-width:700px){.plan{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.plan li{border:1px solid var(--rule);border-radius:8px;padding:10px 12px;background:var(--bg);display:flex;flex-direction:column;gap:2px}
+.plan .k{font:600 .75rem var(--f-mono);color:var(--muted)}
+.plan b{font-weight:700}
+.fields{display:flex;flex-wrap:wrap;gap:14px}
+.fields label{display:flex;flex-direction:column;gap:4px;font-weight:700;font-size:.9rem;flex:1 1 200px;max-width:320px}
+.fields input{font:inherit;font-weight:400;height:44px;padding:0 12px;border:2px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink)}
+.fields input:focus{outline:none;border-color:var(--accent)}
+
+/* Results */
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+@media (max-width:560px){.stats{grid-template-columns:minmax(0,1fr)}}
+.stat{border:1px solid var(--rule);border-radius:8px;padding:12px 14px;background:var(--bg)}
+.stat .v{font:600 1.7rem var(--f-mono);font-variant-numeric:tabular-nums;display:block;line-height:1.2}
+.stat .l{font-size:.82rem;color:var(--muted)}
+.dots{display:grid;gap:8px}
+.dots div{display:grid;grid-template-columns:10.5rem minmax(0,1fr);gap:10px;align-items:center}
+@media (max-width:480px){.dots div{grid-template-columns:minmax(0,1fr);gap:2px}}
+.dots span.p{font-weight:700;font-size:.9rem}
+.dots .d{display:flex;gap:5px;flex-wrap:wrap}
+.dots i{width:16px;height:16px;border-radius:50%;background:var(--rule);display:inline-block}
+.dots i.first{background:var(--good)}
+.dots i.hint{background:var(--brass)}
+.dots i.shown{background:var(--bad)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem;color:var(--muted)}
+.legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+.send{display:flex;flex-direction:column;gap:12px;border:2px solid var(--accent);border-radius:10px;padding:16px;background:var(--bg)}
+.send ol{margin:0;padding-left:1.3rem;display:grid;gap:8px}
+.addr{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.addr code{user-select:all;-webkit-user-select:all;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:4px 8px;word-break:break-all}
+textarea.sum{width:100%;min-height:220px;font:.85rem/1.5 var(--f-mono);padding:12px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);color:var(--ink);resize:vertical}
+.btns{display:flex;flex-wrap:wrap;gap:10px}
+.warn{background:var(--brass-soft);border-radius:8px;padding:10px 14px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+
+/* Trig table */
+.book{display:flex;flex-direction:column;position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);max-height:calc(100vh - 40px);min-width:0}
+@media (max-width:900px){.book{position:static;max-height:none}}
+.book-head{padding:14px 16px 10px;border-bottom:1px solid var(--rule);display:flex;flex-direction:column;gap:8px}
+.book-head h3{font-family:var(--f-display);font-weight:400;font-size:1.15rem;margin:0}
+.jump{display:flex;gap:8px}
+.jump input{flex:1;min-width:0;font:inherit;font-family:var(--f-mono);font-size:.9rem;padding:7px 10px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink)}
+.jump button{font:inherit;font-size:.85rem;font-weight:700;padding:7px 12px;border-radius:6px;border:1px solid var(--accent);background:var(--accent);color:var(--paper);cursor:pointer}
+.hint-sm{font-size:.8rem;color:var(--muted);margin:0}
+.cols,.trow{display:grid;grid-template-columns:2.8rem repeat(3,minmax(0,1fr));gap:4px}
+.cols{padding:6px 12px;border-bottom:1px solid var(--rule)}
+.cols span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700;padding-left:6px}
+.cols span.on{color:var(--accent)}
+.scroller{overflow-y:auto;flex:1;min-height:0}
+@media (max-width:900px){.scroller{max-height:380px}}
+.trow{padding:2px 12px;align-items:center}
+.trow:nth-child(5n+1){border-bottom:1px solid var(--rule)}
+.chip{font-family:var(--f-mono);font-variant-numeric:tabular-nums;font-size:.86rem;padding:3px 6px;border-radius:5px;border:1px solid transparent;cursor:pointer;text-align:left;background:none;color:var(--muted);min-width:0}
+.chip.ang{font-weight:600;color:var(--ink)}
+.scroller[data-fn="sin"] .chip[data-fn="sin"],.scroller[data-fn="cos"] .chip[data-fn="cos"],.scroller[data-fn="tan"] .chip[data-fn="tan"]{color:var(--accent);background:var(--accent-soft)}
+.chip:hover{border-color:var(--rule);background:var(--bg)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.chip.flash{background:var(--brass-soft)!important;border-color:var(--brass);color:var(--ink)}
+.none{font-family:var(--f-mono);font-size:.86rem;color:var(--muted);padding:3px 6px}
+
+/* Calculator (Trig-O-Matic) */
+.calc{background:var(--case);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;box-shadow:0 8px 0 var(--case-2);position:sticky;top:calc(env(safe-area-inset-top,0px) + 12px);min-width:0}
+@media (max-width:900px){.calc{position:static}}
+.calc .brand{display:flex;justify-content:space-between;color:#9aa3ad;font-family:var(--f-mono);font-size:.7rem;letter-spacing:.15em;text-transform:uppercase}
+.solar{display:flex;gap:2px}.solar i{width:14px;height:10px;background:#3b2f27;border:1px solid #57483c}
+.screen{background:var(--lcd);color:var(--lcd-ink);border-radius:6px;padding:10px 14px;font-family:var(--f-lcd);box-shadow:inset 0 3px 0 rgba(0,0,0,.25);min-height:100px;display:flex;flex-direction:column;justify-content:center;align-items:flex-end;text-align:right;overflow:hidden}
+.screen .l1{font-size:1.4rem;line-height:1.1;min-height:1.1em;word-break:break-all;opacity:.75}
+.screen .l2{font-size:2.4rem;line-height:1.05;letter-spacing:.04em;word-break:break-all}
+.keys{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.key{font:700 1.05rem var(--f-body);padding:12px 6px;border-radius:8px;border:none;background:var(--key);color:var(--key-ink);cursor:pointer;box-shadow:0 3px 0 rgba(0,0,0,.35)}
+.key:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.key:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.key.op{background:var(--accent-soft);color:var(--ink)}
+.key.eq{grid-row:span 2;background:var(--brass);color:#1a1408;font-size:1.3rem}
+.key.zero{grid-column:span 2}
+.cnote{color:var(--case-ink);font-size:.88rem;margin:0}
+.lbls{display:flex;flex-wrap:wrap;gap:8px}
+.lbl{font:700 .85rem var(--f-body);letter-spacing:.06em;text-transform:uppercase;padding:9px 14px;border-radius:999px;border:2px solid var(--accent);background:var(--paper);color:var(--accent);cursor:grab;touch-action:manipulation}
+.lbl.sel{background:var(--accent);color:var(--paper)}
+.lbl.used{opacity:.5;border-style:dashed}
+.lbl:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.tri text.role.empty{fill:var(--muted);font-weight:400;text-transform:none;letter-spacing:0;font-style:italic}
+.tri text.role.bad{fill:var(--bad)}
+.tri .side.drop .edge{stroke:var(--brass);stroke-width:6}
+.in.sel{width:10rem;font-family:var(--f-body);font-size:.95rem}
+.choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+@media (max-width:560px){.choices{grid-template-columns:minmax(0,1fr)}}
+.choice{display:flex;flex-direction:column;gap:4px;text-align:left;padding:18px 20px;border-radius:12px;border:2px solid var(--accent);background:var(--paper);color:var(--ink);cursor:pointer;font:inherit}
+.choice strong{font-family:var(--f-display);font-weight:400;font-size:1.5rem;color:var(--accent)}
+.choice span{color:var(--muted);font-size:.92rem}
+.choice:hover{background:var(--accent-soft)}
+.choice.hot{border-color:var(--brass);background:var(--brass-soft)}
+.choice.hot strong{color:var(--ink)}
+.choice:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
+.send-h{font-family:var(--f-display);font-weight:400;font-size:1.25rem}
+.rescode{display:block;word-break:break-all;font:1rem/1.5 var(--f-mono);background:var(--paper);border:2px dashed var(--accent);padding:12px 14px;border-radius:8px;user-select:all;-webkit-user-select:all}
+.teacher{border-top:1px solid var(--rule);padding-top:14px;font-size:.88rem}
+.teacher .linkbtn{color:var(--muted)}
+.tblwrap{overflow-x:auto;border:1px solid var(--rule);border-radius:8px}
+.tbl{border-collapse:collapse;width:100%;font-size:.92rem;min-width:640px}
+.tbl th,.tbl td{padding:8px 12px;text-align:left;border-bottom:1px solid var(--rule);white-space:nowrap}
+.tbl thead th{font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:var(--bg)}
+.tbl tbody th{font-weight:700}
+.tbl td.n{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.tbl tr:last-child th,.tbl tr:last-child td{border-bottom:0}
+.tbl .badrow{background:var(--bad-soft)}
+.flag{font-size:.75rem;font-weight:700;color:var(--bad);margin-left:6px}
+.detail{display:grid;gap:8px}
+.detail details{border:1px solid var(--rule);border-radius:8px;padding:10px 14px;background:var(--bg)}
+.detail summary{cursor:pointer;font-weight:700}
+.detail details[open]{display:flex;flex-direction:column;gap:10px}
+.qlist{list-style:none;margin:0;padding:0;display:grid;gap:4px;font-size:.88rem}
+.qlist li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px dashed var(--rule);padding:3px 0}
+.qlist li span:last-child{color:var(--muted);white-space:nowrap}
+.fx{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:30}
+.partdone{display:flex;flex-direction:column;gap:2px;background:var(--brass-soft);border:2px solid var(--brass);border-radius:10px;padding:12px 16px}
+.partdone strong{font-family:var(--f-display);font-weight:400;font-size:1.3rem}
+.btn.pulse{animation:pulse 1.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--brass)}50%{box-shadow:0 0 0 6px transparent}}
+@media (prefers-reduced-motion:reduce){.btn.pulse{animation:none}}
+.toast{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:8px 14px;border-radius:8px;font-size:.9rem;max-width:calc(100% - 32px);z-index:20}
+@media (prefers-reduced-motion:reduce){.progress .bar i{transition:none}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>SOH CAH TOA Lab</h1>
+    </div>
+    <ol class="progress" id="progress" aria-label="Lesson progress"></ol>
+  </header>
+
+  <main class="stage" id="stage">
+    <section class="card panel" id="card" aria-live="polite"></section>
+    <aside class="book panel" id="book" aria-label="Trig table" hidden>
+      <div class="book-head">
+        <h3>Table of sines, cosines and tangents</h3>
+        <div class="jump">
+          <input id="jump" type="text" inputmode="decimal" placeholder="Jump to 35 or 0.8" aria-label="Jump to an angle or a value">
+          <button id="jumpBtn" type="button">Go</button>
+        </div>
+        <p class="hint-sm">Tap a number to put it in your answer box. Type a value like 0.8 to find the closest one in your ratio's column.</p>
+      </div>
+      <div class="cols"><span>Angle</span><span id="hsin">sin</span><span id="hcos">cos</span><span id="htan">tan</span></div>
+      <div class="scroller" id="scroller"></div>
+    </aside>
+    <aside class="calc" id="calc" aria-label="Calculator" hidden>
+      <div class="brand"><span>Trig-O-Matic</span><span class="solar"><i></i><i></i><i></i><i></i></span></div>
+      <div class="screen"><div class="l1" id="l1"></div><div class="l2" id="l2" aria-live="polite">0</div></div>
+      <div class="keys" id="keys"></div>
+      <p class="cnote">Work it out here, then type your answer in the box. The step tells you how to round.</p>
+    </aside>
+  </main>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+/* ---------- Setup ---------- */
+const CODE_KEY='trig-lab-q7Rx2Kw';
+let teacherView=false, teacherCodes='';
+const KEY='sohcahtoa-guided-v2';
+let selRole=null;
+const R=d=>d*Math.PI/180, DEG=r=>r*180/Math.PI;
+const F={sin:a=>Math.sin(R(a)),cos:a=>Math.cos(R(a)),tan:a=>Math.tan(R(a))};
+const V=(fn,a)=>(Math.round(F[fn](a)*1e4)/1e4).toFixed(4);
+const PAIR={sin:['opp','hyp'],cos:['adj','hyp'],tan:['opp','adj']};
+const MNEM={sin:'SOH',cos:'CAH',tan:'TOA'};
+const NAME={opp:'opposite',adj:'adjacent',hyp:'hypotenuse'};
+const SENT={opp:'The opposite side is across from θ. It doesn’t touch θ.',adj:'The adjacent side touches θ, but it isn’t the hypotenuse.',hyp:'The hypotenuse is across from the right angle (the little square).'};
+const LABEL={opp:'opposite side',adj:'adjacent side',hyp:'hypotenuse'};
+const PARTS=['','Name the sides','Write the ratios','Find a side','Find an angle','Bonus: x on the bottom'];
+const ROLE_OF={P0:{bottom:'adj',vertical:'opp',hyp:'hyp'},P2:{bottom:'opp',vertical:'adj',hyp:'hyp'}};
+const sideOf=(at,role)=>Object.keys(ROLE_OF[at]).find(s=>ROLE_OF[at][s]===role);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=s=>parseFloat(String(s).trim().replace(',','.'));
+const $=id=>document.getElementById(id);
+const FLD=n=>document.querySelector(`#card .step.active [data-f="${n}"]`);
+const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+
+/* ---------- Screens ---------- */
+const S=[{kind:'intro'}];
+S.push({kind:'lesson',part:1,key:'L1'});
+[
+ {tri:{W:4,H:3,at:'P0'},ask:'hyp'},
+ {tri:{W:4,H:3,at:'P0'},ask:'opp'},
+ {tri:{W:3,H:4,at:'P2',flipX:true},ask:'opp'},
+ {tri:{W:5,H:3,at:'P2',flipY:true},ask:'adj'},
+ {tri:{W:4,H:2.6,at:'P0',flipX:true,flipY:true},ask:'adj'}
+].forEach(q=>S.push({kind:'q',part:1,type:'pick',...q}));
+S.push({kind:'lesson',part:2,key:'L2'});
+[
+ {b:4,v:3,h:5,at:'P0',fn:'sin'},
+ {b:4,v:3,h:5,at:'P0',fn:'cos'},
+ {b:4,v:3,h:5,at:'P0',fn:'tan'},
+ {b:12,v:5,h:13,at:'P2',fn:'sin'},
+ {b:15,v:8,h:17,at:'P0',flipX:true,fn:'tan'},
+ {b:24,v:7,h:25,at:'P2',flipY:true,fn:'cos'}
+].forEach(q=>S.push({kind:'q',part:2,type:'ratio',...q}));
+S.push({kind:'lesson',part:3,key:'L3'});
+[
+ {name:'Ladder',fn:'sin',ang:35,known:20,kr:'hyp',xr:'opp',unit:'ft',text:'A 20 ft ladder leans against a wall, making a 35° angle with the ground. How high up the wall does it reach?'},
+ {name:'Tree',fn:'tan',ang:50,known:15,kr:'adj',xr:'opp',unit:'m',flipX:true,text:'You stand 15 m from a tree and look up at a 50° angle to see the top. How tall is the tree? (Ignore your own height.)'},
+ {name:'Slide',fn:'cos',ang:30,known:8,kr:'hyp',xr:'adj',unit:'ft',text:'An 8 ft slide makes a 30° angle with the ground. How far does it stretch along the ground?'},
+ {name:'Forearm',fn:'sin',ang:60,known:30,kr:'hyp',xr:'opp',unit:'cm',flipX:true,text:'Your 30 cm forearm is raised 60° above horizontal, pivoting at the elbow. How high above your elbow is your hand?'}
+].forEach(q=>{q.tv=V(q.fn,q.ang); q.ans=+(q.known*+q.tv).toFixed(1); q.alt=+(q.known*F[q.fn](q.ang)).toFixed(1); S.push({kind:'q',part:3,type:'side',...q})});
+S.push({kind:'lesson',part:4,key:'L4'});
+[
+ {name:'Ladder',fn:'sin',num:8,den:10,nr:'opp',dr:'hyp',unit:'ft',text:'A 10 ft ladder reaches 8 ft up a wall. What angle does it make with the ground?'},
+ {name:'Flagpole',fn:'tan',num:6,den:8,nr:'opp',dr:'adj',unit:'m',flipX:true,text:'A 6 m flagpole casts an 8 m shadow. How many degrees above the horizon is the sun?'},
+ {name:'Ladder',fn:'cos',num:5,den:13,nr:'adj',dr:'hyp',unit:'ft',text:'The foot of a 13 ft ladder sits 5 ft from the wall. What angle does the ladder make with the ground?'}
+].forEach(q=>{const r=q.num/q.den; q.ratio=(Math.round(r*1e4)/1e4).toFixed(4); q.trueAng=DEG(q.fn==='sin'?Math.asin(r):q.fn==='cos'?Math.acos(r):Math.atan(r));
+  let best=1,bd=9; for(let a=1;a<90;a++){const d=Math.abs(+V(q.fn,a)-r); if(d<bd){bd=d;best=a}} q.best=best; S.push({kind:'q',part:4,type:'angle',...q})});
+S.push({kind:'choice'});
+const CHOICE=S.length-1;
+S.push({kind:'lesson',part:5,key:'L5'});
+[
+ {name:'Ladder',fn:'sin',ang:35,known:12,kr:'opp',xr:'hyp',unit:'ft',text:'A ladder reaches 12 ft up a wall and makes a 35° angle with the ground. How long is the ladder?'},
+ {name:'Tree',fn:'tan',ang:55,known:18,kr:'opp',xr:'adj',unit:'m',flipX:true,text:'A tree is 18 m tall. You look up at a 55° angle to see the top. How far are you from the tree? (Ignore your own height.)'},
+ {name:'Slide',fn:'cos',ang:30,known:6,kr:'adj',xr:'hyp',unit:'ft',text:'A slide stretches 6 ft along the ground and makes a 30° angle with it. How long is the slide?'}
+].forEach(q=>{q.tv=V(q.fn,q.ang); q.ans=+(q.known/+q.tv).toFixed(1); q.alt=+(q.known/F[q.fn](q.ang)).toFixed(1); S.push({kind:'q',part:5,type:'den',...q})});
+S.push({kind:'results'});
+const RESULTS=S.length-1;
+const STEPS={pick:['pick'],ratio:['label','frac'],side:['fn','val','setup','x'],den:['fn','val','setup','mult','div'],angle:['fn','asetup','ratio','ang']};
+const QIDX=S.map((s,i)=>i).filter(i=>S[i].kind==='q');
+const QMAIN=QIDX.filter(i=>S[i].part<=4), QBONUS=QIDX.filter(i=>S[i].part===5);
+const L5I=S.findIndex(s=>s.key==='L5');
+
+/* ---------- State ---------- */
+let st={i:0,max:0,name:'',period:'',start:null,end:null,rec:{}};
+try{const s=JSON.parse(localStorage.getItem(KEY)||'null'); if(s&&s.rec) st=Object.assign(st,s)}catch(e){}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+function rec(i){return st.rec[i]||(st.rec[i]={step:0,wrong:0,sw:0,revealed:false,done:false,vals:[],bad:[],fb:'',fbk:'',draft:''})}
+
+/* ---------- Triangle drawing ---------- */
+function tri(o){
+  const VW=380,VH=230, s=Math.min(230/o.W,140/o.H), w=o.W*s, h=o.H*s, ox=(VW-w)/2, oy=(VH-h)/2;
+  const P=[[0,0],[o.W,0],[o.W,o.H]].map(([x,y])=>{x*=s;y*=s;return [(o.flipX?w-x:x)+ox,(o.flipY?y:h-y)+oy]});
+  const at=o.at||'P0', ai=at==='P2'?2:0, roles=ROLE_OF[at];
+  const cx=(P[0][0]+P[1][0]+P[2][0])/3, cy=(P[0][1]+P[1][1]+P[2][1])/3;
+  const SIDES={bottom:[0,1],vertical:[1,2],hyp:[0,2]};
+  const unit=(a,b)=>{const dx=b[0]-a[0],dy=b[1]-a[1],L=Math.hypot(dx,dy)||1;return [dx/L,dy/L]};
+  const f=n=>n.toFixed(1);
+  let g='';
+  let bx0=0,by0=0,bx1=VW,by1=VH;
+  const grow=(x,y)=>{bx0=Math.min(bx0,x);by0=Math.min(by0,y);bx1=Math.max(bx1,x);by1=Math.max(by1,y)};
+  const box=(x,y,w,sz,an)=>{const l=an==='start'?x:an==='end'?x-w:x-w/2; grow(l,y-sz*.85); grow(l+w,y+sz*.3)};
+  const A=P[ai], oth=[0,1,2].filter(k=>k!==ai).map(k=>P[k]);
+  const u=unit(A,oth[0]), v=unit(A,oth[1]), ar=30;
+  const s1=[A[0]+u[0]*ar,A[1]+u[1]*ar], s2=[A[0]+v[0]*ar,A[1]+v[1]*ar], sw=(u[0]*v[1]-u[1]*v[0])>0?1:0;
+  g+=`<path class="shade" d="M${f(A[0])} ${f(A[1])} L${f(s1[0])} ${f(s1[1])} A${ar} ${ar} 0 0 ${sw} ${f(s2[0])} ${f(s2[1])} Z"/>`;
+  g+=`<path class="arc" d="M${f(s1[0])} ${f(s1[1])} A${ar} ${ar} 0 0 ${sw} ${f(s2[0])} ${f(s2[1])}"/>`;
+  const C=P[1], p=unit(C,P[0]), q=unit(C,P[2]), k=13;
+  g+=`<path class="sq" d="M${f(C[0]+p[0]*k)} ${f(C[1]+p[1]*k)} L${f(C[0]+p[0]*k+q[0]*k)} ${f(C[1]+p[1]*k+q[1]*k)} L${f(C[0]+q[0]*k)} ${f(C[1]+q[1]*k)}"/>`;
+  const posName={bottom:(o.flipY?'top':'bottom')+' side',vertical:(o.flipX?'left':'right')+' side',hyp:'slanted side'};
+  for(const sd of ['bottom','vertical','hyp']){
+    const [a,b]=SIDES[sd].map(k=>P[k]), cls=o.hl&&o.hl[sd]?' '+o.hl[sd]:'';
+    const xy=`x1="${f(a[0])}" y1="${f(a[1])}" x2="${f(b[0])}" y2="${f(b[1])}"`;
+    if(o.pick) g+=`<g class="side" data-side="${sd}" tabindex="0" role="button" aria-label="${posName[sd]}"><line class="edge${cls}" ${xy}/><line class="hit" ${xy}/></g>`;
+    else g+=`<line class="edge${cls}" ${xy}/>`;
+  }
+  for(const sd of ['bottom','vertical','hyp']){
+    const [a,b]=SIDES[sd].map(k=>P[k]), m=[(a[0]+b[0])/2,(a[1]+b[1])/2], d=unit([cx,cy],m);
+    const val=o.len&&o.len[sd], role=o.roleText?(o.roleText[sd]||''):o.roles?NAME[roles[sd]]:'', rcls=o.roleCls&&o.roleCls[sd]?' '+o.roleCls[sd]:'';
+    if(!val&&!role) continue;
+    const x=m[0]+d[0]*18, y=m[1]+d[1]*18+5, an=d[0]>.35?'start':d[0]<-.35?'end':'middle';
+    if(val){g+=`<text class="${val==='x'?'x':''}" x="${f(x)}" y="${f(y)}" text-anchor="${an}">${esc(val)}</text>`; box(x,y,String(val).length*9.3,15,an)}
+    if(role){const ry=val?(d[1]<-.2?y-18:y+15):y; g+=`<text class="role${rcls}" x="${f(x)}" y="${f(ry)}" text-anchor="${an}">${role}</text>`; box(x,ry,role.length*8.6,11,an)}
+  }
+  const bis=unit([0,0],[u[0]+v[0],u[1]+v[1]]);
+  const angTxt=o.angLabel||'θ', axl=A[0]+bis[0]*50, ayl=A[1]+bis[1]*50+5;
+  g+=`<text class="${o.angUnknown?'x':''}" x="${f(axl)}" y="${f(ayl)}" text-anchor="middle">${esc(angTxt)}</text>`;
+  box(axl,ayl,angTxt.length*9.3,15,'middle');
+  const pad=10;
+  return `<svg class="tri" viewBox="${f(bx0-pad)} ${f(by0-pad)} ${f(bx1-bx0+2*pad)} ${f(by1-by0+2*pad)}" role="img" aria-label="${esc(o.aria||'Right triangle with angle θ marked')}">${g}</svg>`;
+}
+
+/* ---------- Lessons ---------- */
+const L={
+ L1:()=>`<p class="eyebrow">Part 1 · ${PARTS[1]}</p>
+  <h2>Every right triangle has three named sides</h2>
+  <p>Pick one of the two small angles and call it <b>θ</b> (the Greek letter theta). Each side gets its name from where it sits compared with θ.</p>
+  <dl class="defs">
+   <div><dt>Hypotenuse</dt><dd>The longest side. It is across from the right angle (the little square). It never changes.</dd></div>
+   <div><dt>Opposite</dt><dd>The side across from θ. It doesn’t touch θ at all.</dd></div>
+   <div><dt>Adjacent</dt><dd>The side that touches θ and isn’t the hypotenuse. “Adjacent” means “next to.”</dd></div>
+  </dl>
+  <div class="pair">
+   <figure>${tri({W:4,H:3,at:'P0',roles:true})}<figcaption>θ at the bottom left</figcaption></figure>
+   <figure>${tri({W:4,H:3,at:'P2',roles:true})}<figcaption>Same triangle, θ at the top</figcaption></figure>
+  </div>
+  <p class="tip">The hypotenuse stays put. Opposite and adjacent trade places when θ moves. Always look at which corner θ is in, then name the sides.</p>`,
+ L2:()=>`<p class="eyebrow">Part 2 · ${PARTS[2]}</p>
+  <h2>Sine, cosine and tangent are ratios of two sides</h2>
+  <p>Each one divides one side by another. Remember them with <b>SOH CAH TOA</b>.</p>
+  <div class="soh">
+   <div><b>SOH</b><span>sin θ = opposite ÷ hypotenuse</span></div>
+   <div><b>CAH</b><span>cos θ = adjacent ÷ hypotenuse</span></div>
+   <div><b>TOA</b><span>tan θ = opposite ÷ adjacent</span></div>
+  </div>
+  <div class="worked">
+   <figure>${tri({W:4,H:3,at:'P0',roles:true,len:{bottom:'4',vertical:'3',hyp:'5'}})}<figcaption>Worked example</figcaption></figure>
+   <ol>
+    <li><b>Label.</b> From θ: opposite = 3, adjacent = 4, hypotenuse = 5.</li>
+    <li><b>sin θ</b> = opposite ÷ hypotenuse = <span class="mono">3/5</span></li>
+    <li><b>cos θ</b> = adjacent ÷ hypotenuse = <span class="mono">4/5</span></li>
+    <li><b>tan θ</b> = opposite ÷ adjacent = <span class="mono">3/4</span></li>
+   </ol>
+  </div>
+  <p class="tip">Label the sides before you write a ratio. Most mistakes come from skipping the labels.</p>`,
+ L3:()=>{const d=40;return `<p class="eyebrow">Part 3 · ${PARTS[3]}</p>
+  <h2>If you know an angle and one side, you can find another side</h2>
+  <p>Every angle has its own sin, cos and tan value. You can read them from the trig table on this page, or from a calculator set to <b>degree mode</b>.</p>
+  <div class="worked">
+   <figure>${tri({W:Math.cos(R(d)),H:Math.sin(R(d)),at:'P0',roles:true,angLabel:'40°',len:{hyp:'50 m',vertical:'x'}})}<figcaption>A kite on 50 m of string at 40°. How high is it?</figcaption></figure>
+   <ol>
+    <li><b>Label.</b> x is opposite the 40° angle. 50 m is the hypotenuse.</li>
+    <li><b>Choose.</b> Opposite and hypotenuse go together in SOH, so use <b>sin</b>.</li>
+    <li><b>Look up.</b> sin 40° = <span class="mono">0.6428</span></li>
+    <li><b>Set up.</b> sin = opposite ÷ hypotenuse, so <span class="mono">0.6428 = x ÷ 50</span></li>
+    <li><b>Solve.</b> Multiply both sides by 50: x = 0.6428 × 50 = <span class="mono">32.1 m</span></li>
+   </ol>
+  </div>
+  <p class="tip">Try the table now: type 40 in the “Jump” box and find 0.6428 in the sin column. In the questions, tap a number in the table to drop it into your answer.</p>`},
+ L5:()=>{const d=40;return `<p class="eyebrow">Bonus · ${PARTS[5]}</p>
+  <h2>When x is on the bottom, it takes one more step</h2>
+  <p>Sometimes the side you want ends up on the bottom of the ratio. Set it up the same way, then multiply both sides by x and divide.</p>
+  <div class="worked">
+   <figure>${tri({W:Math.cos(R(d)),H:Math.sin(R(d)),at:'P0',roles:true,angLabel:'40°',len:{vertical:'30 m',hyp:'x'}})}<figcaption>A kite is 30 m above the ground. The string makes a 40° angle with the ground. How long is the string?</figcaption></figure>
+   <ol>
+    <li><b>Label.</b> 30 m is opposite the 40° angle. x is the hypotenuse.</li>
+    <li><b>Choose.</b> Opposite and hypotenuse go together in SOH, so use <b>sin</b>.</li>
+    <li><b>Look up.</b> sin 40° = <span class="mono">0.6428</span></li>
+    <li><b>Set up.</b> <span class="mono">0.6428 = 30 ÷ x</span></li>
+    <li><b>Multiply both sides by x.</b> <span class="mono">0.6428 · x = 30</span></li>
+    <li><b>Divide both sides by 0.6428.</b> x = 30 ÷ 0.6428 = <span class="mono">46.7 m</span></li>
+   </ol>
+  </div>
+  <p class="tip">Check your answer: the hypotenuse is always the longest side. If x is the hypotenuse and your answer is shorter than the other side, you multiplied instead of divided.</p>`},
+ L4:()=>`<p class="eyebrow">Part 4 · ${PARTS[4]}</p>
+  <h2>If you know two sides, you can work backward to the angle</h2>
+  <p>Divide the two sides to get the ratio. Then search the table for the angle that has that ratio.</p>
+  <div class="worked">
+   <figure>${tri({W:12,H:3.2,at:'P0',roles:true,angUnknown:true,len:{bottom:'12 m',vertical:'1 m'}})}<figcaption>A ramp rises 1 m over 12 m of ground. (Drawn steeper so you can see it.)</figcaption></figure>
+   <ol>
+    <li><b>Label.</b> 1 m is opposite θ. 12 m is adjacent.</li>
+    <li><b>Choose.</b> Opposite and adjacent go together in TOA, so use <b>tan</b>.</li>
+    <li><b>Set up.</b> tan = opposite ÷ adjacent, so <span class="mono">tan θ = 1 ÷ 12</span></li>
+    <li><b>Divide.</b> 1 ÷ 12 = <span class="mono">0.0833</span></li>
+    <li><b>Look up backward.</b> Down the tan column, 0.0875 at 5° is the closest value. So θ ≈ <span class="mono">5°</span>.</li>
+   </ol>
+  </div>
+  <p class="tip">On a calculator this is the inverse button: tan⁻¹(0.0833) ≈ 4.8°, which rounds to 5°.</p>`
+};
+
+/* ---------- Question helpers ---------- */
+function lenOf(q,role){const sd=sideOf(q.at,role); return sd==='bottom'?q.b:sd==='vertical'?q.v:q.h}
+function triOpts(q,r){
+  if(q.type==='pick'){
+    const hl={}; r.bad.forEach(s=>hl[s]='bad'); if(r.done) hl[sideOf(q.tri.at,q.ask)]='good';
+    return {...q.tri,pick:!r.done,hl,roles:r.done};
+  }
+  if(q.type==='ratio'){
+    const lab=r.step===0&&!r.done, hl={};
+    if(r.done) PAIR[q.fn].forEach(ro=>hl[sideOf(q.at,ro)]='focus');
+    const o={W:q.b,H:q.v,at:q.at,flipX:q.flipX,flipY:q.flipY,len:{bottom:String(q.b),vertical:String(q.v),hyp:String(q.h)},hl};
+    if(lab){o.pick=true; o.roleText={}; o.roleCls={}; for(const sd of ['bottom','vertical','hyp']){const ro=(r.place||{})[sd]; o.roleText[sd]=ro?NAME[ro]:'drop a label'; o.roleCls[sd]=!ro?'empty':(r.badSides||[]).includes(sd)?'bad':''}}
+    else o.roles=true;
+    return o;
+  }
+  const a=q.ang??q.trueAng, d=clamp(a,22,62), len={};
+  if(q.type!=='angle'){len[sideOf('P0',q.kr)]=q.known+' '+q.unit; len[sideOf('P0',q.xr)]='x'}
+  else{len[sideOf('P0',q.nr)]=q.num+' '+q.unit; len[sideOf('P0',q.dr)]=q.den+' '+q.unit}
+  return {W:Math.cos(R(d)),H:Math.sin(R(d)),at:'P0',flipX:q.flipX,len,roles:r.step>=1||r.sw>=1,
+    angLabel:q.type!=='angle'?q.ang+'°':'θ',angUnknown:q.type==='angle'};
+}
+function promptOf(q){
+  if(q.type==='pick') return q.ask==='hyp'?'Tap the <b>hypotenuse</b>.':`Tap the side that is <b>${NAME[q.ask]}</b> to θ.`;
+  if(q.type==='ratio') return `Write <b>${q.fn} θ</b> as a fraction.`;
+  return esc(q.text);
+}
+
+function stepHTML(q,r,k,idx){
+  const state=idx<r.step?'done':idx===r.step&&!r.done?'active':'later';
+  if(state==='later') return '';
+  const dis=state==='done'?'disabled':'', v=state==='done'?(r.vals[idx]??''):(r.draft||'');
+  const chk=state==='active'?`<button class="btn small" type="button" data-act="check">Check</button>`:'';
+  let t='',ctl='';
+  const n=STEPS[q.type].length>1?`<span class="n">${state==='done'?'✓':idx+1}</span>`:`<span class="n">${state==='done'?'✓':'?'}</span>`;
+  switch(k){
+   case 'fn':
+    t=q.type!=='angle'?`Which ratio connects the side you know and the side you want?`:`Which ratio uses the two sides you know?`;
+    t+=`<small>SOH: sin = opp ÷ hyp · CAH: cos = adj ÷ hyp · TOA: tan = opp ÷ adj</small>`;
+    ctl=`<div class="fns" role="group" aria-label="Choose a ratio">${['sin','cos','tan'].map(f=>`<button type="button" class="fn${state==='done'&&f===q.fn?' on':''}" data-act="fn" data-fn="${f}" ${dis}>${f}</button>`).join('')}</div>`;
+    return `<div class="step ${state}">${n}<div class="step-body"><span class="step-text">${t}</span>${ctl}</div></div>`;
+   case 'val':
+    t=`Look up <b class="mono">${q.fn} ${q.ang}°</b> in the table.<small>Write all 4 decimal places.</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.fn} ${q.ang}° =</span><input class="in" id="in-${st.i}-${idx}" data-f="in" data-accept="val" inputmode="decimal" autocomplete="off" aria-label="Table value" value="${esc(v)}" ${dis}>${chk}</div>`; break;
+   case 'x':
+    t=`Multiply both sides by ${q.known} to get x by itself.<small>${q.tv} × ${q.known} = x. Round to the nearest tenth.</small>`;
+    ctl=`<div class="row-in"><span class="pre">x =</span><input class="in" id="in-${st.i}-${idx}" data-f="in" inputmode="decimal" autocomplete="off" aria-label="Your answer for x" value="${esc(v)}" ${dis}><span class="pre">${q.unit}</span>${chk}</div>`; break;
+   case 'mult':
+    t=`Multiply both sides by x.<small>On the right side, the x on the bottom cancels out. What is left?</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.tv} · x =</span><input class="in" id="in-${st.i}-${idx}" data-f="in" inputmode="decimal" autocomplete="off" aria-label="What is left on the right side" value="${esc(v)}" ${dis}>${chk}</div>`; break;
+   case 'div':
+    t=`Divide both sides by ${q.tv} to get x by itself.<small>x = ${q.known} ÷ ${q.tv}. Round to the nearest tenth.</small>`;
+    ctl=`<div class="row-in"><span class="pre">x =</span><input class="in" id="in-${st.i}-${idx}" data-f="in" inputmode="decimal" autocomplete="off" aria-label="Your answer for x" value="${esc(v)}" ${dis}><span class="pre">${q.unit}</span>${chk}</div>`; break;
+   case 'setup': {
+    const [a,b]=String(v||'/').split('/');
+    t=`Set up the equation as a ratio.<small>${q.fn} = ${LABEL[PAIR[q.fn][0]]} ÷ ${LABEL[PAIR[q.fn][1]]}. Put x or ${q.known} in each box.</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.tv} =</span><span class="frac"><input class="in" id="in-${st.i}-${idx}" data-f="in" autocomplete="off" aria-label="Top of the ratio" value="${esc(a||'')}" ${dis}><hr><input class="in" id="in2-${st.i}-${idx}" data-f="in2" inputmode="decimal" autocomplete="off" aria-label="Bottom of the ratio" value="${esc(b||'')}" ${dis}></span>${chk}</div>`; break;}
+   case 'asetup': {
+    const [a,b]=String(v||'/').split('/');
+    t=`Set up the equation as a ratio.<small>${q.fn} θ = ${LABEL[PAIR[q.fn][0]]} ÷ ${LABEL[PAIR[q.fn][1]]}. Put the side lengths in the boxes.</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.fn} θ =</span><span class="frac"><input class="in" id="in-${st.i}-${idx}" data-f="in" inputmode="decimal" autocomplete="off" aria-label="Top of the ratio" value="${esc(a||'')}" ${dis}><hr><input class="in" id="in2-${st.i}-${idx}" data-f="in2" inputmode="decimal" autocomplete="off" aria-label="Bottom of the ratio" value="${esc(b||'')}" ${dis}></span>${chk}</div>`; break;}
+   case 'ratio':
+    t=`Divide to turn the ratio into a decimal.<small>${q.num} ÷ ${q.den}. Write 4 decimal places.</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.fn} θ =</span><input class="in" id="in-${st.i}-${idx}" data-f="in" data-accept="num" inputmode="decimal" autocomplete="off" aria-label="The ratio as a decimal" value="${esc(v)}" ${dis}>${chk}</div>`; break;
+   case 'ang':
+    t=`Find the angle whose ${q.fn} is closest to your answer.<small>Look down the ${q.fn} column of the table. Choose the nearest degree.</small>`;
+    ctl=`<div class="row-in"><span class="pre">θ ≈</span><input class="in" id="in-${st.i}-${idx}" data-f="in" data-accept="ang" inputmode="decimal" autocomplete="off" aria-label="The angle in degrees" value="${esc(v)}" ${dis}><span class="pre">°</span>${chk}</div>`; break;
+   case 'label': {
+    if(state==='done'){t='Label each side of the triangle.'; ctl='<span class="muted">All three sides labeled.</span>'; break}
+    const used=Object.values(r.place||{});
+    t=`Label each side of the triangle.<small>Drag a label onto a side, or tap a label and then tap a side. Start by looking at which corner θ is in.</small>`;
+    ctl=`<div class="lbls">${['opp','adj','hyp'].map(ro=>`<button type="button" class="lbl${selRole===ro?' sel':''}${used.includes(ro)?' used':''}" draggable="true" data-act="lbl" data-role="${ro}" aria-pressed="${selRole===ro}">${NAME[ro]}</button>`).join('')}</div><div class="row-in"><button class="btn small" type="button" data-act="check">Check labels</button><button class="btn ghost small" type="button" data-act="clearlbl">Clear</button></div>`; break;}
+   case 'frac': {
+    const fd=(state==='done'?r.vals[idx]:r.fd)||{};
+    const opt=w=>`<option value="">choose…</option>`+['opp','adj','hyp'].map(ro=>`<option value="${ro}" ${w===ro?'selected':''}>${NAME[ro]}</option>`).join('');
+    t=`Fill in the problem.<small>Pick the two sides that go with ${q.fn} (SOH CAH TOA), then put in their lengths from the triangle.</small>`;
+    ctl=`<div class="row-in"><span class="pre">${q.fn} θ =</span><span class="frac"><select class="in sel" id="w1-${st.i}-${idx}" data-f="w1" aria-label="Top side" ${dis}>${opt(fd.w1)}</select><hr><select class="in sel" id="w2-${st.i}-${idx}" data-f="w2" aria-label="Bottom side" ${dis}>${opt(fd.w2)}</select></span><span class="pre">=</span><span class="frac"><input class="in" id="in-${st.i}-${idx}" data-f="in" inputmode="numeric" autocomplete="off" aria-label="Top number" value="${esc(fd.a??'')}" ${dis}><hr><input class="in" id="in2-${st.i}-${idx}" data-f="in2" inputmode="numeric" autocomplete="off" aria-label="Bottom number" value="${esc(fd.b??'')}" ${dis}></span>${chk}</div>`; break;}
+   case 'pick': return '';
+  }
+  return `<div class="step ${state}">${n}<div class="step-body"><span class="step-text">${t}</span>${ctl}</div></div>`;
+}
+
+/* ---------- Render ---------- */
+function partCounts(p){const qs=QIDX.filter(i=>S[i].part===p);return [qs.filter(i=>st.rec[i]&&st.rec[i].done).length,qs.length]}
+function renderProgress(){
+  const cur=S[st.i];
+  let h='';
+  for(let p=1;p<=5;p++){
+    const [d,t]=partCounts(p), first=S.findIndex(s=>s.part===p), on=cur.part===p;
+    h+=`<li><button type="button" data-go="${first}" class="${on?'cur':''}" ${first>st.max?'disabled':''} aria-label="Part ${p}: ${PARTS[p]}, ${d} of ${t} done"><span class="bar"><i style="width:${d/t*100}%"></i></span><span class="lab">${p===5?'Bonus':p+' · '+PARTS[p]}</span></button></li>`;
+  }
+  const all=QMAIN.every(i=>st.rec[i]&&st.rec[i].done);
+  h+=`<li><button type="button" data-go="${RESULTS}" class="${cur.kind==='results'||cur.kind==='done'?'cur':''}" ${CHOICE>st.max?'disabled':''}><span class="bar"><i style="width:${all?100:0}%"></i></span><span class="lab">Send</span></button></li>`;
+  $('progress').innerHTML=h;
+}
+
+function navHTML(nextOK,nextLabel,pulse){
+  const back=st.i>0?`<button class="btn ghost" type="button" data-act="back">Back</button>`:'<span></span>';
+  return `<div class="nav">${back}<button class="btn${pulse?' pulse':''}" type="button" data-act="next" ${nextOK?'':'disabled'}>${nextLabel||'Next'}</button></div>`;
+}
+
+function render(){
+  const s=S[st.i], card=$('card');
+  renderProgress();
+  if(teacherView){$('stage').classList.remove('with-book'); $('book').hidden=true; $('calc').hidden=true; card.innerHTML=decoderHTML(); return}
+  const calcMode=s.kind==='q'&&((s.type==='side'&&rec(st.i).step>=3)||(s.type==='den'&&rec(st.i).step>=4)||(s.type==='angle'&&rec(st.i).step<=2&&!rec(st.i).done));
+  $('stage').classList.toggle('with-book',s.part>=3);
+  $('book').hidden=!(s.part>=3)||calcMode;
+  $('calc').hidden=!calcMode;
+  if(s.kind==='intro') card.innerHTML=introHTML();
+  else if(s.kind==='lesson') card.innerHTML=L[s.key]()+navHTML(true,'Start the questions');
+  else if(s.kind==='results') card.innerHTML=resultsHTML();
+  else if(s.kind==='choice') card.innerHTML=choiceHTML();
+  else if(s.kind==='done') card.innerHTML=doneHTML();
+  else card.innerHTML=qHTML(s,st.i);
+  syncCol();
+  const inp=card.querySelector('.step.active input, .step.active select, .step.active .fn, .step.active .lbl')||card.querySelector('.side');
+  if(inp&&s.kind==='q') setTimeout(()=>{try{inp.focus({preventScroll:true})}catch(e){}},0);
+}
+
+function qHTML(q,i){
+  const r=rec(i), list=QIDX.filter(j=>S[j].part===q.part), n=list.indexOf(i)+1;
+  let h=`<p class="eyebrow">${q.part===5?'Bonus':'Part '+q.part} · ${PARTS[q.part]} · Question ${n} of ${list.length}</p><h2>${promptOf(q)}</h2>`;
+  h+=`<div class="figure">${tri(triOpts(q,r))}</div>`;
+  if(q.type!=='pick') h+=`<div class="steps">${STEPS[q.type].map((k,idx)=>stepHTML(q,r,k,idx)).join('')}</div>`;
+  else if(!r.done) h+=`<p class="muted">Tap or click a side of the triangle. You can also use Tab and Enter.</p>`;
+  h+=`<p class="fb ${r.fbk}" role="status">${r.fb}</p>`;
+  if(!r.done&&r.sw>=3) h+=`<div><button class="btn ghost small" type="button" data-act="reveal">Show me this step</button></div>`;
+  const partLast=list[list.length-1]===i, [pd,pt]=partCounts(q.part), finished=r.done&&partLast&&pd===pt;
+  const doneMsg=q.part<4?`Next up: Part ${q.part+1}, ${PARTS[q.part+1]}. Tap the button below to start it.`:q.part===4?'You finished all four parts! Tap the button below to choose what’s next.':'You finished the bonus round! Tap the button below to send your results.';
+  if(finished) h+=`<div class="partdone" role="status"><strong>${q.part===5?'Bonus':'Part '+q.part} complete!</strong><span>${doneMsg}</span></div>`;
+  h+=navHTML(r.done,!partLast?'Next question':q.part<4?`Go to Part ${q.part+1}`:q.part===4?'Next':'See my results',finished);
+  return h;
+}
+
+function introHTML(){
+  const started=Object.keys(st.rec).length>0;
+  return `<h2>Meet sine, cosine and tangent</h2>
+  <p>Read each short lesson, then answer the questions. If you get one wrong, you’ll get a hint. At the end, you’ll copy a code that you can send to your teacher.</p>
+  <ol class="plan">${[1,2,3,4].map(p=>`<li><span class="k">Part ${p}</span><b>${PARTS[p]}</b><span class="muted">${partCounts(p)[1]} questions</span></li>`).join('')}</ol>
+  <div class="fields">
+   <label for="nm">Your name<input id="nm" autocomplete="name" value="${esc(st.name)}"></label>
+  </div>
+  <p class="fb bad" id="introErr" role="status"></p>
+  <div class="btns"><button class="btn" type="button" data-act="begin">${started?'Continue where I left off':'Start the lesson'}</button>
+  ${started?`<button class="btn ghost" type="button" data-act="reset" id="resetBtn">Start over</button>`:''}</div>
+  <p class="teacher"><button class="linkbtn" type="button" data-act="teacher">Statistics</button></p>`;
+}
+
+function choiceHTML(){
+  return `<p class="eyebrow">You finished all four parts</p>
+  <h2>Want to try a bonus round?</h2>
+  <p>In the bonus, x is on the bottom of the ratio. It takes one extra step to solve. Your results so far are saved either way.</p>
+  <div class="choices">
+   <button type="button" class="choice hot" data-go="${L5I}"><strong>Bonus!</strong><span>${QBONUS.length} problems with x on the bottom</span></button>
+   <button type="button" class="choice" data-go="${RESULTS}"><strong>I’m done for now</strong><span>Go send your results</span></button>
+  </div>
+  <div class="nav"><button class="btn ghost" type="button" data-act="back">Back</button><span></span></div>`;
+}
+/* ---------- Results ---------- */
+function status(r){if(!r||!r.done) return 'not finished'; if(r.revealed) return 'answer shown'; return r.wrong===0?'first try':`correct after ${r.wrong} miss${r.wrong>1?'es':''}`}
+function qLabel(q){
+  if(q.type==='pick') return q.ask==='hyp'?'Find the hypotenuse':`Find the ${NAME[q.ask]} side`;
+  if(q.type==='ratio') return `${q.fn} θ for a ${q.b}-${q.v}-${q.h} triangle`;
+  return `${q.name} (${q.type==='den'?'x on the bottom':q.type==='side'?'find a side':'find an angle'})`;
+}
+function tally(){
+  let first=0,hint=0,shown=0,left=0;
+  QMAIN.forEach(i=>{const r=st.rec[i]; if(!r||!r.done) left++; else if(r.revealed) shown++; else if(r.wrong===0) first++; else hint++});
+  return {first,hint,shown,left,total:QMAIN.length};
+}
+function minutes(){const end=st.end||Date.now(); return st.start?Math.max(1,Math.round((end-st.start)/60000)):0}
+function summaryText(){
+  const t=tally(), lines=[];
+  lines.push('SOH CAH TOA Lab results');
+  lines.push(`Name: ${st.name}`);
+  lines.push(`Finished: ${new Date(st.end||Date.now()).toLocaleString()}`);
+  lines.push(`Time spent: about ${minutes()} min`);
+  lines.push('');
+  lines.push(`Correct on the first try: ${t.first} of ${t.total}`);
+  lines.push(`Correct after hints: ${t.hint}`);
+  lines.push(`Answers shown: ${t.shown}`);
+  if(t.left) lines.push(`Not finished: ${t.left}`);
+  for(let p=1;p<=4;p++){
+    lines.push('');
+    lines.push(`Part ${p}: ${PARTS[p]}`);
+    QIDX.filter(i=>S[i].part===p).forEach((i,n)=>lines.push(`  ${p}.${n+1} ${qLabel(S[i])}: ${status(st.rec[i])}`));
+  }
+  lines.push('');
+  if(QBONUS.some(i=>st.rec[i])){
+    lines.push(`Bonus: ${PARTS[5]} (${QBONUS.filter(i=>st.rec[i]&&st.rec[i].done).length} of ${QBONUS.length} done)`);
+    QBONUS.forEach((i,n)=>lines.push(`  B.${n+1} ${qLabel(S[i])}: ${status(st.rec[i])}`));
+  } else lines.push('Bonus: not tried');
+  return lines.join('\n');
+}
+function stClass(c){return c==='f'?'first':c==='s'?'shown':c==='n'?'':'hint'}
+function stText(c){return c==='f'?'first try':c==='s'?'answer shown':c==='n'?'not finished':`correct after ${c} miss${c==='1'?'':'es'}`}
+function qCodes(){return QIDX.map(i=>{const r=st.rec[i]; if(!r||!r.done) return 'n'; if(r.revealed) return 's'; return r.wrong===0?'f':String(Math.min(9,r.wrong))}).join('')}
+function fnv(str){let h=0x811c9dc5; for(let i=0;i<str.length;i++){h^=str.charCodeAt(i); h=Math.imul(h,0x01000193)>>>0} return h.toString(36).padStart(4,'0').slice(-4)}
+function scramble(bytes){const key=new TextEncoder().encode(CODE_KEY); return bytes.map((x,i)=>x^key[i%key.length]^((i*37+11)&255))}
+function encodeResults(){
+  const end=st.end||Date.now();
+  const body=['1',String(st.name).replace(/\|/g,'/'),Math.floor(end/60000).toString(36),String(minutes()),qCodes()].join('|');
+  const bytes=scramble(new TextEncoder().encode(body+'|'+fnv(body+CODE_KEY)));
+  let bin=''; bytes.forEach(x=>bin+=String.fromCharCode(x));
+  return 'SCT-'+btoa(bin).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
+function decodeResults(code){
+  try{
+    let b=code.slice(4).replace(/-/g,'+').replace(/_/g,'/'); while(b.length%4) b+='=';
+    const bin=atob(b), raw=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) raw[i]=bin.charCodeAt(i);
+    const parts=new TextDecoder().decode(scramble(raw)).split('|');
+    if(parts.length!==6||parts[0]!=='1') return {ok:false,code};
+    const chk=parts.pop(), [ver,name,endB,mins,qs]=parts;
+    return {ok:true,code,valid:fnv(parts.join('|')+CODE_KEY)===chk&&qs.length===QIDX.length,name,end:parseInt(endB,36)*60000,mins:+mins,qs};
+  }catch(e){return {ok:false,code}}
+}
+function codeTally(qs){
+  const t={first:0,hint:0,shown:0,left:0,bdone:0};
+  QIDX.forEach((i,k)=>{const c=qs[k]||'n'; if(S[i].part===5){if(c!=='n') t.bdone++; return} if(c==='n') t.left++; else if(c==='s') t.shown++; else if(c==='f') t.first++; else t.hint++});
+  return t;
+}
+function dotsHTML(qs,withBonus){
+  return [1,2,3,4,...(withBonus?[5]:[])].map(p=>`<div><span class="p">${p===5?'Bonus':p+' · '+PARTS[p]}</span><span class="d">${QIDX.map((i,k)=>[i,k]).filter(([i])=>S[i].part===p).map(([i,k])=>`<i class="${stClass(qs[k])}" title="${esc(qLabel(S[i])+': '+stText(qs[k]))}"></i>`).join('')}</span></div>`).join('');
+}
+const LEGEND=`<div class="legend"><span><i style="background:var(--good)"></i>First try</span><span><i style="background:var(--brass)"></i>After a hint</span><span><i style="background:var(--bad)"></i>Answer shown</span><span><i style="background:var(--rule)"></i>Not finished</span></div>`;
+function resultsHTML(){
+  const all=QMAIN.every(i=>st.rec[i]&&st.rec[i].done);
+  if(all&&!st.end){st.end=Date.now(); save()}
+  const t=tally(), qs=qCodes(), code=encodeResults();
+  const firstLeft=QMAIN.find(i=>!(st.rec[i]&&st.rec[i].done));
+  const bonusTried=QBONUS.some(i=>st.rec[i]), bonusAll=QBONUS.every(i=>st.rec[i]&&st.rec[i].done);
+  return `<p class="eyebrow">Your results</p>
+  <h2>${all?'Nice work':'Almost there'}, ${esc(st.name||'friend')}. Here’s how you did.</h2>
+  ${t.left?`<div class="warn"><span>You still have ${t.left} question${t.left>1?'s':''} left.</span><button class="btn small" type="button" data-go="${firstLeft}">Go to the next one</button></div>`:''}
+  <div class="stats">
+   <div class="stat"><span class="v">${t.first}/${t.total}</span><span class="l">Correct on the first try</span></div>
+   <div class="stat"><span class="v">${t.hint}</span><span class="l">Correct after a hint</span></div>
+   <div class="stat"><span class="v">${t.shown}</span><span class="l">Answers shown</span></div>
+  </div>
+  <div class="dots">${dotsHTML(qs,bonusTried)}</div>
+  ${LEGEND}
+  <p class="muted">Time spent: about ${minutes()} min${bonusTried?` · Bonus: ${QBONUS.filter(i=>st.rec[i]&&st.rec[i].done).length} of ${QBONUS.length} done`:''}</p>
+  ${!t.left&&!bonusAll?`<div class="warn"><span>${bonusTried?'You can still finish the bonus round.':'Want a challenge? Try the bonus round: x on the bottom.'}</span><button class="btn small ghost" type="button" data-go="${bonusTried?(QBONUS.find(i=>!(st.rec[i]&&st.rec[i].done))):L5I}">${bonusTried?'Finish the bonus':'Try the bonus'}</button></div>`:''}
+  <div class="send">
+   <strong class="send-h">Send your results to your teacher</strong>
+   <ol>
+    <li>Tap <b>Copy my code</b>.</li>
+    <li>Paste the code in a comment to your teacher and post it.</li>
+   </ol>
+   <code class="rescode" id="code">${code}</code>
+   <div class="btns"><button class="btn" type="button" data-act="copy">Copy my code</button></div>
+   <p class="muted" style="font-size:.85rem">If you go back and answer more questions, come back here and copy your new code.</p>
+  </div>
+  <div class="nav"><button class="btn ghost" type="button" data-act="back">Back</button><span></span></div>`;
+}
+function doneHTML(){
+  return `<p class="eyebrow">All done</p>
+  <h2>You’re all done, ${esc(st.name||'friend')}!</h2>
+  <p>Make sure you pasted your code in a comment to your teacher and posted it. Then you can close this tab.</p>
+  <div class="send">
+   <strong class="send-h">Your code</strong>
+   <code class="rescode" id="code">${encodeResults()}</code>
+   <div class="btns"><button class="btn ghost" type="button" data-act="copy">Copy my code again</button></div>
+  </div>
+  <div class="nav"><button class="btn ghost" type="button" data-go="${RESULTS}">Back to my results</button><span></span></div>`;
+}
+function decodedList(){return (teacherCodes.match(/SCT-[A-Za-z0-9_-]+/g)||[]).map(decodeResults)}
+function decoderHTML(){
+  const list=decodedList(), good=list.filter(d=>d.ok);
+  let out='';
+  if(teacherCodes.trim()&&!list.length) out=`<p class="fb bad">No codes found. Each code starts with SCT-.</p>`;
+  if(list.length){
+    const rows=list.map(d=>{
+      if(!d.ok) return `<tr class="badrow"><td colspan="8">Couldn’t read <code>${esc(d.code.slice(0,24))}…</code> The code may be cut off or mistyped.</td></tr>`;
+      const t=codeTally(d.qs);
+      return `<tr${d.valid?'':' class="badrow"'}><th scope="row">${esc(d.name)}${d.valid?'':' <span class="flag">check: edited?</span>'}</th><td>${new Date(d.end).toLocaleString([], {month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}</td><td class="n">${d.mins} min</td><td class="n">${t.first}/${QMAIN.length}</td><td class="n">${t.hint}</td><td class="n">${t.shown}</td><td class="n">${t.left}</td><td class="n">${t.bdone}/${QBONUS.length}</td></tr>`;
+    }).join('');
+    out+=`<div class="tblwrap"><table class="tbl"><thead><tr><th>Name</th><th>Finished</th><th>Time</th><th>First try</th><th>After a hint</th><th>Shown</th><th>Not done</th><th>Bonus</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    if(good.length) out+=`<div class="btns"><button class="btn ghost small" type="button" data-act="copytsv">Copy table for a spreadsheet</button></div>
+      <div class="detail">${good.map(d=>`<details><summary>${esc(d.name)}: question by question</summary><div class="dots">${dotsHTML(d.qs,codeTally(d.qs).bdone>0)}</div>${LEGEND}<ul class="qlist">${QIDX.map((i,k)=>`<li><span>${S[i].part===5?'Bonus':'Part '+S[i].part} · ${esc(qLabel(S[i]))}</span><span>${stText(d.qs[k]||'n')}</span></li>`).join('')}</ul></details>`).join('')}</div>`;
+    if(list.some(d=>d.ok&&!d.valid)) out+=`<p class="muted" style="font-size:.85rem">“Check: edited?” means the code’s built-in check didn’t match, so it may have been changed or copied wrong.</p>`;
+  }
+  return `<p class="eyebrow">For teachers</p>
+  <h2>Statistics</h2>
+  <p>Paste one or more codes below. Each starts with <span class="mono">SCT-</span>. You can paste a whole batch of comments at once; anything that isn’t a code is ignored.</p>
+  <label for="codes" class="muted" style="font-size:.85rem">Codes</label>
+  <textarea class="sum" id="codes" placeholder="SCT-…">${esc(teacherCodes)}</textarea>
+  <div class="btns"><button class="btn" type="button" data-act="decode">Decode</button><button class="btn ghost" type="button" data-act="exit-teacher">Back to the start</button></div>
+  ${out}`;
+}
+function decodedTSV(){
+  const head=['Name','Finished','Minutes','First try','After a hint','Shown','Not done','Bonus done',...QIDX.map((i,k)=>`${S[i].part===5?'B':'P'+S[i].part}.${QIDX.filter(j=>S[j].part===S[i].part).indexOf(i)+1}`)];
+  const rows=decodedList().filter(d=>d.ok).map(d=>{const t=codeTally(d.qs); return [d.name,new Date(d.end).toLocaleString(),d.mins,t.first,t.hint,t.shown,t.left,t.bdone,...QIDX.map((i,k)=>stText(d.qs[k]||'n'))]});
+  return [head,...rows].map(r=>r.join('\t')).join('\n');
+}
+
+/* ---------- Answer checking ---------- */
+function setFb(r,msg,k){r.fb=msg;r.fbk=k}
+function advance(q,r,shown){
+  r.step++; r.sw=0; r.draft='';
+  if(r.step>=STEPS[q.type].length){r.done=true}
+}
+function miss(r,msg){r.wrong++;r.sw++;setFb(r,msg,'bad')}
+function submit(i,val){
+  const q=S[i], r=rec(i), k=STEPS[q.type][r.step]; if(r.done) return;
+  if(k==='fn'){
+    const [a,b]=q.type!=='angle'?[q.kr,q.xr]:[q.nr,q.dr];
+    if(val===q.fn){r.vals[r.step]=val; setFb(r,`Yes, ${val}. The ${NAME[PAIR[val][0]]} and ${NAME[PAIR[val][1]]} go together in ${MNEM[val]}.`,'good'); advance(q,r)}
+    else miss(r,`Not ${val}: ${val} uses the ${NAME[PAIR[val][0]]} and ${NAME[PAIR[val][1]]}. Here you have the ${NAME[a]} and the ${NAME[b]}. The labels are on the triangle now. Which ratio uses those two?`);
+  }
+  else if(k==='val'){
+    const v=num(val); if(isNaN(v)){setFb(r,'Type a decimal like 0.1234.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-+q.tv)<=0.0006){r.vals[r.step]=q.tv; setFb(r,`Right: ${q.fn} ${q.ang}° = ${q.tv}.`,'good'); advance(q,r)}
+    else{
+      const other=['sin','cos','tan'].find(f=>f!==q.fn&&Math.abs(v-+V(f,q.ang))<=0.0006);
+      let wrongAng=-1; for(let a=0;a<90;a++) if(a!==q.ang&&Math.abs(v-+V(q.fn,a))<=0.0001){wrongAng=a;break}
+      if(other) miss(r,`That’s ${other} ${q.ang}°. Read across the ${q.ang}° row to the ${q.fn} column.`);
+      else if(Math.abs(v-Math[q.fn](q.ang))<=0.001) miss(r,'Your calculator is in radian mode. Switch it to degree mode and try again.');
+      else if(wrongAng>=0) miss(r,`That’s ${q.fn} ${wrongAng}°. Find the ${q.ang}° row instead.`);
+      else miss(r,`Find ${q.ang}° in the Angle column of the table, then read across to the ${q.fn} column.`);
+    }
+  }
+  else if(k==='setup'){
+    const [a,b]=String(val).split('/').map(s=>s.trim().toLowerCase()), [ra,rb]=PAIR[q.fn];
+    r.draft=val;
+    if(!a||!b){setFb(r,'Fill in both boxes: x and the side you know.','bad');return}
+    const xTop=q.type!=='den', want=xTop?`x/${q.known}`:`${q.known}/x`;
+    if(xTop?(a==='x'&&num(b)===q.known):(b==='x'&&num(a)===q.known)){r.vals[r.step]=want; setFb(r,`Right: ${q.tv} = ${want.replace('/',' ÷ ')}.`,'good'); advance(q,r)}
+    else if(num(a)===+q.tv||num(b)===+q.tv) miss(r,`${q.tv} is already on the left side of the equation. In the two boxes, put x and ${q.known}.`);
+    else if(xTop?(b==='x'&&num(a)===q.known):(a==='x'&&num(b)===q.known)) miss(r,`Upside down. ${q.fn} = ${LABEL[ra]} ÷ ${LABEL[rb]}. Which one is x: the ${LABEL[ra]} or the ${LABEL[rb]}?`);
+    else miss(r,`x is the ${LABEL[q.xr]} and ${q.known} is the ${LABEL[q.kr]}. ${q.fn} = ${LABEL[ra]} ÷ ${LABEL[rb]}, so which goes on top?`);
+  }
+  else if(k==='mult'){
+    const v=num(val); if(isNaN(v)){setFb(r,'Type a number.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-q.known)<1e-9){r.vals[r.step]=String(q.known); setFb(r,`Right: ${q.tv} · x = ${q.known}. One more step.`,'good'); advance(q,r)}
+    else miss(r,`The right side was ${q.known} ÷ x. Multiplying it by x cancels the x, so only ${q.known} is left.`);
+  }
+  else if(k==='div'){
+    const v=num(val); if(isNaN(v)){setFb(r,'Type a number, like 12.3.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-q.ans)<0.051||Math.abs(v-q.alt)<0.051){r.vals[r.step]=String(q.ans); setFb(r,`x = ${q.known} ÷ ${q.tv} ≈ ${q.ans} ${q.unit}. Nice.`,'good'); advance(q,r)}
+    else if(Math.abs(v-q.known*+q.tv)<0.06) miss(r,`It looks like you multiplied. Divide both sides by ${q.tv}: x = ${q.known} ÷ ${q.tv}.${q.xr==='hyp'?` Check: the hypotenuse is the longest side, so x must be bigger than ${q.known}.`:''}`);
+    else miss(r,`Divide ${q.known} ÷ ${q.tv}, then round to one decimal place.${r.sw>=1?' Check your division.':''}`);
+  }
+  else if(k==='x'){
+    const v=num(val); if(isNaN(v)){setFb(r,'Type a number, like 12.3.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-q.ans)<0.051||Math.abs(v-q.alt)<0.051){r.vals[r.step]=String(q.ans); setFb(r,`x = ${q.known} × ${q.tv} ≈ ${q.ans} ${q.unit}. Nice.`,'good'); advance(q,r)}
+    else if(Math.abs(v-q.known/+q.tv)<0.06) miss(r,`It looks like you divided. Since ${q.fn} ${q.ang}° = x ÷ ${q.known}, multiply: x = ${q.known} × ${q.tv}.`);
+    else miss(r,`Multiply ${q.known} × ${q.tv}, then round to one decimal place.${r.sw>=1?' Check your multiplication.':''}`);
+  }
+  else if(k==='asetup'){
+    const [a,b]=String(val).split('/').map(num), [ra,rb]=PAIR[q.fn];
+    r.draft=val;
+    if(isNaN(a)||isNaN(b)){setFb(r,'Fill in both boxes with side lengths.','bad');return}
+    if(a===q.num&&b===q.den){r.vals[r.step]=`${q.num}/${q.den}`; setFb(r,`Right: ${q.fn} θ = ${q.num} ÷ ${q.den}.`,'good'); advance(q,r)}
+    else if(a===q.den&&b===q.num) miss(r,`Upside down. In ${MNEM[q.fn]}, the ${LABEL[ra]} goes on top of the fraction and the ${LABEL[rb]} goes on the bottom.`);
+    else if(r.sw<1) miss(r,`Use the side lengths from the triangle. ${q.fn} θ = ${LABEL[ra]} ÷ ${LABEL[rb]}.`);
+    else miss(r,`The ${LABEL[q.nr]} is ${q.num} and the ${LABEL[q.dr]} is ${q.den}.`);
+  }
+  else if(k==='ratio'){
+    const v=num(val), rt=q.num/q.den; if(isNaN(v)){setFb(r,'Type a decimal like 0.1234.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-rt)<=0.0006){r.vals[r.step]=q.ratio; setFb(r,`Right: ${q.fn} θ = ${q.num} ÷ ${q.den} = ${q.ratio}.`,'good'); advance(q,r)}
+    else if(Math.abs(v-q.den/q.num)<0.001) miss(r,`Upside down. ${q.fn} θ = ${NAME[q.nr]} ÷ ${NAME[q.dr]}, so ${q.num} goes first: ${q.num} ÷ ${q.den}.`);
+    else miss(r,`Divide ${q.num} ÷ ${q.den} and write 4 decimal places, like 0.1234.`);
+  }
+  else if(k==='ang'){
+    const v=num(val); if(isNaN(v)){setFb(r,'Type a whole number of degrees.','bad');return}
+    r.draft=val;
+    if(Math.abs(v-q.trueAng)<1){r.vals[r.step]=String(q.best); setFb(r,`θ ≈ ${q.best}°. The closest ${q.fn} value in the table is ${V(q.fn,q.best)}, at ${q.best}°.`,'good'); advance(q,r)}
+    else if(v<2) miss(r,`That’s the ratio, not the angle. Look down the ${q.fn} column for ${q.ratio} and read the angle at the left of that row.`);
+    else miss(r,`Look down the ${q.fn} column for the value closest to ${q.ratio}. The angle on that row is θ.`);
+  }
+  else if(k==='frac'){
+    const {w1,w2}=val, a=num(val.a), b=num(val.b), [ra,rb]=PAIR[q.fn], ca=lenOf(q,ra), cb=lenOf(q,rb);
+    r.fd=val;
+    if(!w1||!w2||isNaN(a)||isNaN(b)||b===0){setFb(r,'Choose both side names and fill in both numbers.','bad');return}
+    if(w1!==ra||w2!==rb){
+      if(w1===rb&&w2===ra) miss(r,`Upside down. In ${MNEM[q.fn]}, the ${LABEL[ra]} goes on top of the fraction and the ${LABEL[rb]} goes on the bottom.`);
+      else if(r.sw<1) miss(r,`Check the side names. In ${MNEM[q.fn]}, ${MNEM[q.fn][0]} stands for ${q.fn}. The next letter is the side that goes in the numerator (top). The next letter is the side that goes in the denominator (bottom).`);
+      else miss(r,`${MNEM[q.fn]} means ${q.fn} θ = ${NAME[ra]} ÷ ${NAME[rb]}.`);
+    }
+    else if(Math.abs(a/b-ca/cb)<1e-9){r.vals[r.step]=val; setFb(r,`Right: ${q.fn} θ = ${NAME[ra]} ÷ ${NAME[rb]} = ${ca}/${cb}.`,'good'); advance(q,r)}
+    else if(Math.abs(a/b-cb/ca)<1e-9) miss(r,`The side names are right, but the numbers are upside down. The ${NAME[ra]} is ${ca}.`);
+    else if(r.sw<1) miss(r,`The side names are right. Now check the numbers: use the lengths of the sides you labeled ${NAME[ra]} and ${NAME[rb]}.`);
+    else miss(r,`The ${NAME[ra]} is ${ca} and the ${NAME[rb]} is ${cb}.`);
+  }
+  save(); render(); if(r.done) afterDone(i);
+}
+function pick(i,sd){
+  const q=S[i], r=rec(i); if(r.done) return;
+  const right=sideOf(q.tri.at,q.ask), role=ROLE_OF[q.tri.at][sd];
+  if(sd===right){r.done=true;r.step=1;r.sw=0;setFb(r,`Yes! ${SENT[q.ask]}`,'good')}
+  else{
+    if(!r.bad.includes(sd)){r.bad.push(sd);r.wrong++;r.sw++}
+    setFb(r,`That’s the ${LABEL[role]}. ${SENT[q.ask]}`,'bad');
+  }
+  save(); render(); if(r.done) afterDone(i);
+}
+function reveal(i){
+  const q=S[i], r=rec(i), k=STEPS[q.type][r.step]; let msg='';
+  if(k==='fn'){r.vals[r.step]=q.fn; msg=`The answer is ${q.fn} (${MNEM[q.fn]}). Look at which two sides are labeled, then keep going.`}
+  if(k==='val'){r.vals[r.step]=q.tv; msg=`${q.fn} ${q.ang}° = ${q.tv}. Find it in the table so you know where it came from.`}
+  if(k==='setup'){const w=q.type==='den'?`${q.known}/x`:`x/${q.known}`; r.vals[r.step]=w; msg=`${q.fn} ${q.ang}° = ${LABEL[PAIR[q.fn][0]]} ÷ ${LABEL[PAIR[q.fn][1]]}, so ${q.tv} = ${w.replace('/',' ÷ ')}.`}
+  if(k==='mult'){r.vals[r.step]=String(q.known); msg=`Multiplying ${q.known} ÷ x by x leaves ${q.known}, so ${q.tv} · x = ${q.known}.`}
+  if(k==='div'){r.vals[r.step]=String(q.ans); msg=`x = ${q.known} ÷ ${q.tv} ≈ ${q.ans} ${q.unit}.`}
+  if(k==='x'){r.vals[r.step]=String(q.ans); msg=`x = ${q.known} × ${q.tv} ≈ ${q.ans} ${q.unit}.`}
+  if(k==='asetup'){r.vals[r.step]=`${q.num}/${q.den}`; msg=`${q.fn} θ = ${LABEL[PAIR[q.fn][0]]} ÷ ${LABEL[PAIR[q.fn][1]]} = ${q.num} ÷ ${q.den}.`}
+  if(k==='ratio'){r.vals[r.step]=q.ratio; msg=`${q.num} ÷ ${q.den} = ${q.ratio}.`}
+  if(k==='ang'){r.vals[r.step]=String(q.best); msg=`The closest ${q.fn} value to ${q.ratio} is ${V(q.fn,q.best)}, at ${q.best}°. So θ ≈ ${q.best}°.`}
+  if(k==='label'){r.place={...ROLE_OF[q.at]}; r.badSides=[]; r.vals[r.step]='ok'; msg='Here are the correct labels. Notice where θ is, then fill in the problem.'}
+  if(k==='frac'){const [ra,rb]=PAIR[q.fn]; r.vals[r.step]={w1:ra,w2:rb,a:lenOf(q,ra),b:lenOf(q,rb)}; msg=`${q.fn} θ = ${NAME[ra]} ÷ ${NAME[rb]} = ${lenOf(q,ra)}/${lenOf(q,rb)}.`}
+  r.revealed=true; setFb(r,msg,'show'); advance(q,r); save(); render(); if(r.done) afterDone(i);
+}
+function afterDone(i){const [d,t]=partCounts(S[i].part); if(d===t) celebrate()}
+function celebrate(){
+  try{if(matchMedia('(prefers-reduced-motion: reduce)').matches) return}catch(e){}
+  const cv=document.createElement('canvas'); cv.className='fx'; cv.setAttribute('aria-hidden','true'); document.body.appendChild(cv);
+  const dpr=Math.min(2,window.devicePixelRatio||1), W=innerWidth, H=innerHeight; cv.width=W*dpr; cv.height=H*dpr;
+  const c=cv.getContext('2d'); c.scale(dpr,dpr);
+  const cs=getComputedStyle(document.documentElement), cols=['--accent','--brass','--good','--bad'].map(v=>cs.getPropertyValue(v).trim()||'#a87a1f');
+  const ps=[];
+  for(let b=0;b<7;b++){
+    const x=W*(.12+Math.random()*.76), y=H*(.12+Math.random()*.38), col=cols[b%cols.length], t0=b*220;
+    for(let k=0;k<44;k++){const a=Math.PI*2*k/44+Math.random()*.15, sp=2+Math.random()*3.2; ps.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,t0,life:900+Math.random()*500,col})}
+  }
+  const start=performance.now();
+  (function frame(now){
+    const t=now-start; c.clearRect(0,0,W,H); let alive=false;
+    for(const p of ps){const age=t-p.t0; if(age<0){alive=true;continue} if(age>p.life) continue; alive=true;
+      const s=age/16.7, k=(1-Math.pow(.95,s))/.05;
+      c.globalAlpha=Math.max(0,1-age/p.life); c.fillStyle=p.col; c.beginPath(); c.arc(p.x+p.vx*k,p.y+p.vy*k+.01*s*s,2.6,0,Math.PI*2); c.fill()}
+    if(alive) requestAnimationFrame(frame); else cv.remove();
+  })(start);
+}
+
+/* ---------- Navigation ---------- */
+function placeLabel(sd,ro){
+  const r=rec(st.i); if(!ro){toast('Tap a label first, then tap a side.');return}
+  r.place=r.place||{}; for(const k in r.place) if(r.place[k]===ro) delete r.place[k];
+  r.place[sd]=ro; r.badSides=(r.badSides||[]).filter(s=>s!==sd); selRole=null; save(); render();
+}
+function checkLabels(i){
+  const q=S[i], r=rec(i), pl=r.place||{};
+  if(Object.keys(pl).length<3){setFb(r,'Put a label on every side, then check.','bad'); render(); return}
+  const bad=['bottom','vertical','hyp'].filter(sd=>pl[sd]!==ROLE_OF[q.at][sd]);
+  if(!bad.length){r.vals[0]='ok'; r.badSides=[]; setFb(r,'All three labels are right. Now use them to fill in the problem.','good'); advance(q,r)}
+  else{r.badSides=bad; const ro=ROLE_OF[q.at][bad[0]]; miss(r,`${bad.length} label${bad.length>1?'s are':' is'} on the wrong side (shown in red). Hint: ${SENT[ro]}`)}
+  save(); render();
+}
+function go(i){selRole=null; calcClear(); st.i=clamp(i,0,S.length-1); st.max=Math.max(st.max,st.i); save(); render(); window.scrollTo({top:0,behavior:'auto'})}
+let resetArmed=false;
+const card=$('card');
+card.addEventListener('click',e=>{
+  const g=e.target.closest('[data-go]'); if(g){go(+g.dataset.go); if(S[st.i].kind==='done') celebrate(); return}
+  const tsvg=dropSvg(e); if(tsvg){const ns=nearestSide(tsvg,e.clientX,e.clientY); if(ns) placeLabel(ns.dataset.side,selRole); return}
+  const sd=e.target.closest('.side'); if(sd){if(S[st.i].type==='ratio') placeLabel(sd.dataset.side,selRole); else pick(st.i,sd.dataset.side); return}
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const act=b.dataset.act;
+  if(act==='next') go(st.i+1);
+  else if(act==='back') go(st.i-1);
+  else if(act==='fn') submit(st.i,b.dataset.fn);
+  else if(act==='check') checkCurrent();
+  else if(act==='reveal') reveal(st.i);
+  else if(act==='lbl'){selRole=selRole===b.dataset.role?null:b.dataset.role; render(); const nb=card.querySelector(`.lbl[data-role="${b.dataset.role}"]`); if(nb) nb.focus()}
+  else if(act==='clearlbl'){const r=rec(st.i); r.place={}; r.badSides=[]; selRole=null; save(); render()}
+  else if(act==='begin'){
+    const nm=$('nm').value.trim();
+    if(!nm){$('introErr').textContent='Type your name so your teacher knows whose results these are.';return}
+    st.name=nm; if(!st.start) st.start=Date.now();
+    go(Object.keys(st.rec).length?Math.max(1,st.max):1);
+  }
+  else if(act==='reset'){
+    if(!resetArmed){resetArmed=true;b.textContent='Tap again to erase your progress';return}
+    st={i:0,max:0,name:'',period:'',start:null,end:null,rec:{}}; resetArmed=false; save(); render();
+  }
+  else if(act==='copy') copy(encodeResults(),'Code copied. Paste it in a comment to your teacher.',$('code'));
+  else if(act==='teacher'){teacherView=true; render(); window.scrollTo({top:0})}
+  else if(act==='exit-teacher'){teacherView=false; render()}
+  else if(act==='decode'){teacherCodes=$('codes').value; render()}
+  else if(act==='copytsv') copy(decodedTSV(),'Copied. Paste it into a spreadsheet.',null);
+});
+card.addEventListener('keydown',e=>{
+  const sd=e.target.closest&&e.target.closest('.side');
+  if(sd&&(e.key==='Enter'||e.key===' ')){e.preventDefault(); if(S[st.i].type==='ratio') placeLabel(sd.dataset.side,selRole); else pick(st.i,sd.dataset.side); return}
+  if(e.key==='Enter'&&e.target.matches('.step.active input')){e.preventDefault();checkCurrent()}
+  if(e.key==='Enter'&&(e.target.id==='nm'||e.target.id==='pd')){e.preventDefault();card.querySelector('[data-act="begin"]').click()}
+});
+card.addEventListener('input',e=>{
+  if(e.target.id==='nm') st.name=e.target.value; if(e.target.id==='pd') st.period=e.target.value;
+  if(e.target.matches('.step.active input, .step.active select')){const r=rec(st.i); if(FLD('w1')) r.fd={w1:FLD('w1').value,w2:FLD('w2').value,a:FLD('in').value,b:FLD('in2').value}; else if(FLD('in2')) r.draft=`${FLD('in').value}/${FLD('in2').value}`; else r.draft=FLD('in').value}
+  save();
+});
+function checkCurrent(){
+  const q=S[st.i], r=rec(st.i), k=STEPS[q.type][r.step];
+  if(k==='label') return checkLabels(st.i);
+  if(k==='frac') submit(st.i,{w1:FLD('w1').value,w2:FLD('w2').value,a:FLD('in').value,b:FLD('in2').value});
+  else if(k==='setup'||k==='asetup') submit(st.i,`${FLD('in').value}/${FLD('in2').value}`);
+  else if(FLD('in')) submit(st.i,FLD('in').value);
+  render();
+}
+card.addEventListener('dragstart',e=>{const l=e.target.closest&&e.target.closest('.lbl'); if(!l) return; e.dataTransfer.setData('text/plain',l.dataset.role); e.dataTransfer.effectAllowed='move'; selRole=l.dataset.role});
+function nearestSide(svg,cx,cy){
+  const m=svg.getScreenCTM(); if(!m) return null;
+  const pt=svg.createSVGPoint(); pt.x=cx; pt.y=cy; const p=pt.matrixTransform(m.inverse());
+  let best=null,bd=Infinity;
+  svg.querySelectorAll('.side').forEach(g=>{const l=g.querySelector('.edge'), x1=+l.getAttribute('x1'), y1=+l.getAttribute('y1'), dx=+l.getAttribute('x2')-x1, dy=+l.getAttribute('y2')-y1;
+    const t=clamp(((p.x-x1)*dx+(p.y-y1)*dy)/(dx*dx+dy*dy||1),0,1), d=Math.hypot(p.x-(x1+t*dx),p.y-(y1+t*dy)); if(d<bd){bd=d;best=g}});
+  return bd<110?best:null;
+}
+const dropSvg=e=>{const svg=e.target.closest&&e.target.closest('svg.tri'); return svg&&svg.querySelector('.side')&&S[st.i].type==='ratio'?svg:null};
+const clearDrop=()=>card.querySelectorAll('.side.drop').forEach(x=>x.classList.remove('drop'));
+card.addEventListener('dragover',e=>{const svg=dropSvg(e); if(!svg) return; e.preventDefault(); const s=nearestSide(svg,e.clientX,e.clientY); clearDrop(); if(s) s.classList.add('drop')});
+card.addEventListener('dragleave',e=>{const svg=dropSvg(e); if(svg&&!svg.contains(e.relatedTarget)) clearDrop()});
+card.addEventListener('drop',e=>{const svg=dropSvg(e); if(!svg) return; e.preventDefault(); clearDrop(); const s=nearestSide(svg,e.clientX,e.clientY); const ro=e.dataTransfer.getData('text/plain')||selRole; if(s&&NAME[ro]) placeLabel(s.dataset.side,ro)});
+card.addEventListener('dragend',()=>card.querySelectorAll('.side.drop').forEach(x=>x.classList.remove('drop')));
+function copy(text,msg,el){
+  const fallback=()=>{if(!el) return; if(el.select){el.focus();el.select()}else{const rg=document.createRange();rg.selectNodeContents(el);const sel=getSelection();sel.removeAllRanges();sel.addRange(rg)} toast('Selected. Press Ctrl+C or ⌘+C to copy.')};
+  try{navigator.clipboard.writeText(text).then(()=>toast(msg),fallback)}catch(e){fallback()}
+}
+$('progress').addEventListener('click',e=>{const b=e.target.closest('[data-go]'); if(b&&!b.disabled) go(+b.dataset.go)});
+
+/* ---------- Trig table ---------- */
+const scroller=$('scroller'), frag=document.createDocumentFragment();
+for(let a=0;a<=90;a++){
+  const row=document.createElement('div'); row.className='trow'; row.id='r'+a;
+  const cell=fn=>(fn==='tan'&&a===90)?`<span class="none">—</span>`:`<button type="button" class="chip" data-kind="val" data-fn="${fn}" data-val="${V(fn,a)}">${V(fn,a)}</button>`;
+  row.innerHTML=`<button type="button" class="chip ang" data-kind="ang" data-val="${a}">${a}°</button>${cell('sin')}${cell('cos')}${cell('tan')}`;
+  frag.appendChild(row);
+}
+scroller.appendChild(frag);
+function curFn(){const q=S[st.i]; if(q.kind!=='q'||!q.fn) return null; const r=rec(st.i); return r.step>=1||r.done?q.fn:null}
+function syncCol(){const fn=curFn(); if(fn) scroller.dataset.fn=fn; else delete scroller.dataset.fn; ['sin','cos','tan'].forEach(f=>$('h'+f).classList.toggle('on',f===fn))}
+scroller.addEventListener('click',e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  const inp=card.querySelector('.step.active input[data-accept]');
+  if(!inp){toast(S[st.i].kind!=='q'?'You’ll use the table in the questions.':rec(st.i).step===0?'Pick your ratio first. The table is for the next step.':'This step doesn’t use the table.');return}
+  const want=inp.dataset.accept;
+  if(want==='num'){toast('Divide the two sides for this step. The table comes in the next step.');return}
+  if(want!==c.dataset.kind){toast(want==='ang'?'This box needs an angle. Tap a number in the Angle column.':'This box needs a value from the sin, cos or tan columns.');return}
+  inp.value=c.dataset.val; rec(st.i).draft=inp.value; save();
+  inp.classList.add('flash'); setTimeout(()=>inp.classList.remove('flash'),900);
+  toast(`Put ${c.textContent} in your answer. Press Check when ready.`);
+});
+function flash(el){el.classList.add('flash'); setTimeout(()=>el.classList.remove('flash'),1600)}
+function scrollToRow(row){scroller.scrollTop=row.offsetTop-scroller.offsetTop-scroller.clientHeight/2+row.clientHeight/2}
+function jump(){
+  const v=$('jump').value.trim(); if(!v) return;
+  if(v.includes('.')){
+    const x=parseFloat(v); if(isNaN(x)) return;
+    const fn=curFn()||'sin'; let best=0,bd=1e9;
+    for(let a=0;a<=(fn==='tan'?89:90);a++){const d=Math.abs(+V(fn,a)-x); if(d<bd){bd=d;best=a}}
+    const row=$('r'+best); scrollToRow(row); flash(row.querySelector(`.chip[data-fn="${fn}"]`));
+    if(!curFn()) toast('Searched the sin column. Pick a ratio first to search its column.');
+  } else {
+    const a=parseInt(v,10); if(isNaN(a)||a<0||a>90){toast('Type an angle from 0 to 90, or a value like 0.8.');return}
+    const row=$('r'+a); scrollToRow(row); flash(row.querySelector('.chip.ang'));
+  }
+}
+$('jumpBtn').addEventListener('click',jump);
+$('jump').addEventListener('keydown',e=>{if(e.key==='Enter') jump()});
+
+/* ---------- Calculator ---------- */
+const KEYS=[['C','C'],['⌫','back'],['÷','÷'],['×','×'],['7','7'],['8','8'],['9','9'],['−','−'],['4','4'],['5','5'],['6','6'],['+','+'],['1','1'],['2','2'],['3','3'],['=','='],['0','0'],['.','.']];
+$('keys').innerHTML=KEYS.map(([t,k])=>`<button type="button" class="key${'÷×−+'.includes(k)?' op':''}${k==='='?' eq':''}${k==='0'?' zero':''}" data-k="${k}" aria-label="${{C:'Clear',back:'Delete','÷':'Divide','×':'Times','−':'Minus','+':'Plus','=':'Equals'}[k]||t}">${t}</button>`).join('');
+let cx='', cdone=false, clast='';
+const OPS='+−×÷';
+function calcEval(s){
+  const arr=(s.match(/\d*\.\d+|\d+\.?|[+−×÷]/g)||[]).map(t=>OPS.includes(t)?t:parseFloat(t));
+  if(arr[0]==='−'){arr.shift(); if(typeof arr[0]==='number') arr[0]=-arr[0]}
+  while(arr.length&&typeof arr[arr.length-1]!=='number') arr.pop();
+  if(!arr.length) return 0;
+  const q=[arr[0]];
+  for(let k=1;k<arr.length;k+=2){const op=arr[k],n=arr[k+1]; if(op==='×') q[q.length-1]*=n; else if(op==='÷') q[q.length-1]/=n; else q.push(op,n)}
+  let r=q[0]; for(let k=1;k<q.length;k+=2) r=q[k]==='+'?r+q[k+1]:r-q[k+1];
+  return r;
+}
+const cfmt=n=>isFinite(n)?String(+n.toPrecision(10)):'ERROR';
+function calcShow(){
+  if(cdone){$('l1').textContent=cx+' ='; $('l2').textContent=clast; return}
+  $('l1').textContent=cx; const m=cx.match(/[\d.]+$/); $('l2').textContent=m?m[0]:(cx?cx.slice(-1):'0');
+}
+function calcClear(){cx='';cdone=false;clast='';if($('l1')) calcShow()}
+function press(k){
+  if(k==='C') return calcClear();
+  if(k==='back'){if(cdone){cdone=false} cx=cx.slice(0,-1); return calcShow()}
+  if(k==='='){if(!cx) return; clast=cfmt(calcEval(cx)); cdone=true; return calcShow()}
+  if(OPS.includes(k)){
+    if(cdone){cx=clast==='ERROR'?'':clast; cdone=false}
+    if(!cx&&k!=='−') return;
+    if(OPS.includes(cx.slice(-1))) cx=cx.slice(0,-1);
+    cx+=k; return calcShow();
+  }
+  if(cdone){cx='';cdone=false}
+  if(k==='.'){const m=cx.match(/[\d.]*$/)[0]; if(m.includes('.')) return; if(!m) cx+='0'}
+  if(cx.length<24) cx+=k; calcShow();
+}
+$('keys').addEventListener('click',e=>{const b=e.target.closest('.key'); if(b) press(b.dataset.k)});
+document.addEventListener('keydown',e=>{
+  if($('calc').hidden||e.target.matches('input,select,textarea')) return;
+  const map={'*':'×','x':'×','/':'÷','-':'−','+':'+','Enter':'=','=':'=','Backspace':'back','Escape':'C','.':'.'};
+  const k=/^\d$/.test(e.key)?e.key:map[e.key]; if(!k) return;
+  if(e.key==='Enter'&&e.target.closest&&e.target.closest('button')&&!e.target.closest('#calc')) return;
+  e.preventDefault(); press(k);
+});
+calcShow();
+
+let tt; function toast(m){const t=$('toast'); t.textContent=m; t.hidden=false; clearTimeout(tt); tt=setTimeout(()=>t.hidden=true,2600)}
+
+if(!st.name) st.i=0;
+render();
+</script>
+
+</body>
+</html>

@@ -245,6 +245,7 @@ textarea.sum{width:100%;min-height:220px;font:.85rem/1.5 var(--f-mono);padding:1
 .choice.hot strong{color:var(--ink)}
 .choice:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 .send-h{font-family:var(--f-display);font-weight:400;font-size:1.25rem}
+.addr-c{user-select:all;-webkit-user-select:all;background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:2px 6px;word-break:break-all}
 .rescode{display:block;word-break:break-all;font:1rem/1.5 var(--f-mono);background:var(--paper);border:2px dashed var(--accent);padding:12px 14px;border-radius:8px;user-select:all;-webkit-user-select:all}
 .teacher{border-top:1px solid var(--rule);padding-top:14px;font-size:.88rem}
 .teacher .linkbtn{color:var(--muted)}
@@ -750,11 +751,8 @@ function resultsHTML(){
   <p class="muted">Time spent: about ${minutes()} min${bonusTried?` · Bonus: ${QBONUS.filter(i=>st.rec[i]&&st.rec[i].done).length} of ${QBONUS.length} done`:''}</p>
   ${!t.left&&!bonusAll?`<div class="warn"><span>${bonusTried?'You can still finish the bonus round.':'Want a challenge? Try the bonus round: x on the bottom.'}</span><button class="btn small ghost" type="button" data-go="${bonusTried?(QBONUS.find(i=>!(st.rec[i]&&st.rec[i].done))):L5I}">${bonusTried?'Finish the bonus':'Try the bonus'}</button></div>`:''}
   <div class="send">
-   <strong class="send-h">Send your results to your teacher</strong>
-   <ol>
-    <li>Tap <b>Copy my code</b>.</li>
-    <li>Paste the code in a comment to your teacher and post it.</li>
-   </ol>
+   <strong class="send-h">Send your results</strong>
+   <p>Copy this code and email it to me at <code class="addr-c">adunlea@euhsd.org</code></p>
    <code class="rescode" id="code">${code}</code>
    <div class="btns"><button class="btn" type="button" data-act="copy">Copy my code</button></div>
    <p class="muted" style="font-size:.85rem">If you go back and answer more questions, come back here and copy your new code.</p>
@@ -985,7 +983,7 @@ card.addEventListener('click',e=>{
     if(!resetArmed){resetArmed=true;b.textContent='Tap again to erase your progress';return}
     st={i:0,max:0,name:'',period:'',start:null,end:null,rec:{}}; resetArmed=false; save(); render();
   }
-  else if(act==='copy') copy(encodeResults(),'Code copied. Paste it in a comment to your teacher.',$('code'));
+  else if(act==='copy') copy(encodeResults(),'Code copied. Paste it into an email to adunlea@euhsd.org.',$('code'));
   else if(act==='teacher'){teacherView=true; render(); window.scrollTo({top:0})}
   else if(act==='exit-teacher'){teacherView=false; render()}
   else if(act==='decode'){teacherCodes=$('codes').value; render()}
